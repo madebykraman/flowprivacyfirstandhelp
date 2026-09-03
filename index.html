@@ -19,11 +19,11 @@
 <header class="topbar"><a class="brand" href="#" aria-label="Ritmi home"><span class="brand-mark">ritmi</span><span class="privacy-pill">local by default</span></a><button class="button ghost small" id="installBtn" hidden>Install</button></header>
 <main id="app" class="main" aria-live="polite"></main>
 <nav class="bottom-nav" aria-label="Primary navigation">
-<button data-view="track" class="nav-item active"><span>◷</span><small>Track</small></button>
-<button data-view="insights" class="nav-item"><span>⌁</span><small>Insights</small></button>
-<button data-view="knowledge" class="nav-item"><span>⌕</span><small>Learn</small></button>
-<button data-view="community" class="nav-item"><span>○</span><small>Community</small></button>
-<button data-view="settings" class="nav-item"><span>⚙</span><small>Settings</small></button>
+<button data-view="track" class="nav-item active"><span aria-hidden="true">◷</span><small>Track</small></button>
+<button data-view="insights" class="nav-item"><span aria-hidden="true">⌁</span><small>Insights</small></button>
+<button data-view="knowledge" class="nav-item"><span aria-hidden="true">⌕</span><small>Learn</small></button>
+<button data-view="community" class="nav-item"><span aria-hidden="true">○</span><small>Community</small></button>
+<button data-view="settings" class="nav-item"><span aria-hidden="true">⚙</span><small>Settings</small></button>
 </nav>
 </div>
 <dialog id="logDialog" class="dialog"><form method="dialog" id="logForm"><div class="dialog-head"><div><p class="eyebrow">Daily log</p><h2 id="logTitle">Log your day</h2></div><button class="close" value="cancel" aria-label="Close">×</button></div><input type="hidden" id="logDate"><label class="check"><input type="checkbox" id="periodDay"><span>Mark this as a period day</span></label><div class="field-grid"><label><span>Flow</span><select id="flow"><option value="">Not logged</option><option>Spotting</option><option>Light</option><option>Medium</option><option>Heavy</option></select></label><label><span>Pain</span><select id="pain"><option value="">Not logged</option><option>None</option><option>Mild</option><option>Moderate</option><option>Severe</option></select></label></div><label class="field"><span>Symptoms</span><input id="symptoms" maxlength="300" placeholder="e.g. cramps, headache, bloating"></label><label class="field"><span>Notes</span><textarea id="notes" rows="4" maxlength="2000" placeholder="Anything you want to remember"></textarea></label><div class="dialog-actions"><button class="button ghost" value="cancel">Cancel</button><button class="button primary" value="default">Save locally</button></div></form></dialog>
@@ -38,5 +38,4 @@
 <script src="v06-data.js"></script>
 <script src="v07-experience.js"></script>
 <script src="v08-trust.js"></script>
-<script src="v10-brand-ritmi.js"></script>
 </body></html>
