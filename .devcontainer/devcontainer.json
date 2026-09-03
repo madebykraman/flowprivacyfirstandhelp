@@ -1,0 +1,12 @@
+{
+  "name": "Ritmi Preview",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Ritmi iPhone preview",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "printf '\\nRitmi preview ready. Run: python3 -m http.server 8080 --bind 0.0.0.0\\n'"
+}
