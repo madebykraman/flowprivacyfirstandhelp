@@ -4,13 +4,15 @@
 
 NijRitu is a free, local-first cycle tracker built around a simple boundary: the product should provide the utility without requiring the company behind it to own a person's private health history.
 
-## V1.1 hardened core
+## V0.3 build
 
 - Local-first cycle tracking with no tracker account
-- Period start and daily logging for flow, pain, symptoms and notes
+- Period start detection based on contiguous period episodes
+- Daily logging for flow, pain, symptoms and notes
 - Calendar with recorded days and estimated period window
-- Baseline cycle and period settings with bounded inputs
-- Simple cycle history and consistency insights
+- Range-based period editing that does not silently erase unrelated history
+- Robust median-based cycle and period baselines with bounded inputs
+- Expanded cycle, period, symptom and pain insights
 - Self mode and partner-cycle mode
 - Local custom symptom labels
 - Encrypted AES-GCM backups using a passphrase-derived key
@@ -19,11 +21,12 @@ NijRitu is a free, local-first cycle tracker built around a simple boundary: the
 - Browser persistent-storage request where supported
 - Import validation and versioned backup format
 - PWA/offline shell
+- Opt-in local reminders with service-worker support where browser capabilities permit
 - Source-linked health knowledge from established publishers
 - Help and safety boundaries
 - Private display mode
 - No ads, analytics SDK, advertising profile or personal-health backend
-- Repository quality workflow for syntax and required-file checks
+- Pure cycle-engine regression tests and repository quality workflow
 
 ## Privacy architecture
 
@@ -65,7 +68,7 @@ Predictions are estimates. Fertility-related calculations must never be presente
 
 Knowledge cards link to reputable original publishers rather than reproducing their medical content.
 
-The public Community and Community Pro layers are not enabled as server-backed features in the current static build. They will only ship when their identity, moderation, metadata and retention model can be documented honestly without weakening the private tracker.
+The public Community and Community Pro layers are deliberately separate from the private tracker. They are not represented as complete until their backend identity, moderation, metadata and retention model can be implemented and documented honestly.
 
 Professional listings must be clearly distinguished from verified listings and are not automatically endorsements.
 
@@ -98,25 +101,44 @@ git switch main
 git pull
 ```
 
-## Launch checklist
+## Launch gate
 
-Before public promotion, complete the operational items outside the static codebase:
+Before public promotion, complete the operational items outside the codebase:
 
 - [ ] Confirm domain and trademark clearance for NijRitu
 - [ ] Publish the privacy policy and support contact
 - [ ] Test the app on current Safari iOS, Chrome Android and desktop browsers
-- [ ] Test backup, encrypted backup, import and delete flows on fresh devices
-- [ ] Verify PWA install behavior on supported platforms
+- [ ] Test backup, encrypted backup, import, period editing, reminders and delete flows on fresh devices
+- [ ] Verify PWA install and notification behavior on supported platforms
 - [ ] Review all medical source links periodically
-- [ ] Keep public community disabled until its backend privacy model is ready
+- [ ] Complete V0.4 and V0.5 backend/public-layer work before describing those layers as live
 
-## Roadmap after the hardened core
+## Roadmap
+
+The roadmap is sequential and binding:
+
+**V0.2 → V0.3 → V0.4 → V0.5 → later platform integrations**
+
+### V0.4
 
 - User-controlled encrypted backup destinations such as WebDAV/Nextcloud
-- Local reminders where browser/platform support permits
+- Provider adapter architecture with ciphertext-only remote storage
+- Anonymous community backend with documented metadata and abuse controls
+- Anonymous submissions/replies without profiles, follower graph or DMs
+- Moderation and retention controls that are separate from private tracker data
+
+### V0.5
+
+- Community Pro professional directory
+- Self-listing workflow
+- Qualification and registration fields where applicable
+- Verification workflow and clear verified/unverified states
+- Public contact/booking links
+- Strict separation from private tracker health data
+
+### Later
+
 - Optional Apple Health / Health Connect integrations, opt-in only
-- Anonymous community with documented metadata and abuse controls
-- Community Pro professional directory and verification workflow
 - Donation support without subscriptions or advertising
 - Native wrapper only if the PWA proves useful
 
@@ -128,7 +150,7 @@ The name combines the idea of something belonging to oneself with the idea of a 
 
 ## Audit log
 
-See `LAUNCH_AUDIT.md` for the preserved product contract, privacy checks, implemented scope, deliberate launch boundaries and operational gate.
+See `LAUNCH_AUDIT.md` for the preserved product contract, roadmap gates, privacy checks, implemented scope, deliberate boundaries and operational gate.
 
 ## License
 
