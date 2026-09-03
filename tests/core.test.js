@@ -27,4 +27,4 @@ assert.equal(p.next,'2026-03-31');
 assert.equal(p.cycle,30);
 assert.equal(p.period,2);
 
-console.log('NijRitu core tests passed');
+console.log('Ritmi core tests passed');
