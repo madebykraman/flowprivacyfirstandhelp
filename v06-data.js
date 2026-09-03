@@ -1,0 +1,13 @@
+/* NijRitu V0.6 data portability. All transformations run locally in the browser. */
+(function(){
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const clean=v=>String(v??'').replace(/\r?\n/g,' ').trim();
+ const csvCell=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ const download=(name,text,type)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+ function rows(){return Object.entries(state.logs||{}).sort(([a],[b])=>a.localeCompare(b)).map(([date,l])=>[date,l?.period?'yes':'no',l?.flow||'',l?.pain||'',(l?.symptoms||[]).join('|'),l?.notes||''])}
+ function exportCsv(){const header=['date','period','flow','pain','symptoms','notes'];download(`nijritu-cycle-${today()}.csv`,[header,...rows()].map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv;charset=utf-8')}
+ function exportIcs(){const events=rows().filter(r=>r[1]==='yes').map(([date])=>{const end=add(date,1).replaceAll('-','');return `BEGIN:VEVENT\nUID:nijritu-${date}@local\nDTSTART;VALUE=DATE:${date.replaceAll('-','')}\nDTEND;VALUE=DATE:${end}\nSUMMARY:NijRitu period day\nEND:VEVENT`});download(`nijritu-period-${today()}.ics`,`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NijRitu//Cycle Data//EN\n${events.join('\n')}\nEND:VCALENDAR\n`,'text/calendar;charset=utf-8')}
+ function card(){const count=rows().length,periods=rows().filter(r=>r[1]==='yes').length;return `<article class="card"><p class="eyebrow">V0.6 · portability</p><h2 class="section-title">Your data should travel.</h2><p class="muted">Export a simple CSV for analysis or an iCalendar file for logged period days. Everything is generated locally. Nothing is uploaded.</p><div class="stat-list"><div class="stat row"><span>Logged dates</span><strong>${count}</strong></div><div class="stat row"><span>Period days</span><strong>${periods}</strong></div></div><div class="button-row"><button class="button primary small" data-action="exportCsv">Export CSV</button><button class="button ghost small" data-action="exportIcs">Export calendar</button></div><p class="muted tiny">CSV contains the fields currently stored by the tracker. Calendar export includes recorded period days only, never predictions.</p></article>`}
+ const oldSettings=window.settings;window.settings=()=>oldSettings()+`<div class="grid">${card()}</div>`;
+ const old=window.actions;window.actions=async function(a,k,s){try{if(a==='exportCsv')return exportCsv();if(a==='exportIcs')return exportIcs();return old(a,k,s)}catch(e){console.error(e);alert(e.message||'Something went wrong.')}};
+})();
