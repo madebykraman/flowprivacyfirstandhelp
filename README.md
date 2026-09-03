@@ -1,32 +1,31 @@
-# Flow
+# NijRitu
 
-Free, local-first cycle tracking, knowledge and help.
+**Your cycle. Your data. Your choice.**
 
-Flow exists for a simple reason: useful cycle tracking should not require a subscription, and a person's private health history should not need to live in the developer's database.
+NijRitu is a free, local-first cycle tracker and health utility built around a simple principle: useful personal health software should not require the company behind it to own your private health history.
 
-## Current MVP
+## V0.2
 
 - Local-first cycle tracking
 - Period start and daily logging
-- Cycle history and simple rolling predictions
-- Calendar view
+- Calendar and simple rolling predictions
 - Self or partner-cycle mode
 - Local IndexedDB storage
-- Export and import of a complete JSON backup
 - Browser persistent-storage request
-- Offline-capable PWA shell
-- Curated health knowledge with attribution and links to original publishers
-- Privacy and medical-use boundaries built into the UI
+- Complete JSON export/import backups
+- Backward-compatible import of Flow V0.1 backups
+- Curated knowledge with links to original publishers
+- Anonymous-community architecture kept separate from private tracking
+- PWA/offline shell
 
 ## Privacy architecture
 
-Private tracking data is stored in the browser on the user's device. The MVP has no login, analytics SDK, advertising SDK, personal-health API, or personal-health backend.
-
-The public layers are intentionally separate:
+Private tracking data is stored in the browser's local IndexedDB database on the user's device. The tracker has no login, advertising SDK, analytics SDK, personal-health API or personal-health backend.
 
 ```text
 PRIVATE DEVICE
-  tracking
+  profile
+  period logs
   symptoms
   notes
   cycle history
@@ -35,30 +34,59 @@ PRIVATE DEVICE
        v
 user-selected storage
 
-PUBLIC APP
+SEPARATE PUBLIC LAYERS
   knowledge
-  community
+  anonymous community
   professional directory
   help resources
 ```
 
-The browser is not a permanent backup. Users should export backups when the data matters. Flow can request persistent storage where the browser supports it, but cannot guarantee that a browser will never clear site data.
+The browser is not a permanent backup. Site data can be cleared by the browser, device settings, private browsing, user action or storage pressure. NijRitu can request persistent storage where supported, but cannot guarantee retention. Export a backup when the information matters.
 
-## Important product boundaries
+## Product boundaries
 
-Flow provides tracking and estimates. It is not a medical device and does not diagnose or treat conditions.
+NijRitu provides tracking and estimates. It is not a medical device and does not diagnose or treat conditions.
 
-Fertility-related calculations should not be presented as contraception or medical certainty.
+Fertility-related calculations must never be presented as contraception or medical certainty.
 
-Knowledge content is not copied into Flow as a replacement for the original publisher. The project links to reputable sources with attribution.
+Knowledge content links to reputable original publishers rather than replacing their work with copied medical content.
 
-Community is designed around anonymous submissions rather than profiles, follower graphs or direct messages. The future community backend must never receive private tracker data.
+Community is intentionally separate from private tracking. Future community infrastructure must never receive private tracker data.
 
-Professional listings will be self-listed unless separately verified. A listing is not automatically an endorsement.
+Professional listings are self-listed unless a separate verification workflow says otherwise. A listing is not automatically an endorsement.
+
+## Development
+
+The project is intentionally dependency-light and can run as a static site.
+
+Serve it over localhost rather than opening `index.html` directly so the service worker can register:
+
+```bash
+python3 -m http.server 8080
+```
+
+Then open `http://localhost:8080`.
+
+For an exact version, use Git history:
+
+```bash
+git log --oneline
+git switch --detach <commit>
+python3 -m http.server 8080
+```
+
+Return to the current build with:
+
+```bash
+git switch main
+git pull
+```
+
+Vercel is not required for development or previewing.
 
 ## Roadmap
 
-### V0.1
+### V0.2
 - [x] Local-first tracker
 - [x] Calendar
 - [x] Basic cycle predictions
@@ -66,29 +94,27 @@ Professional listings will be self-listed unless separately verified. A listing 
 - [x] Import/export
 - [x] PWA/offline shell
 - [x] Knowledge links
+- [x] NijRitu brand foundation
+- [x] Flow backup compatibility
 
-### V0.2
+### V0.3
 - [ ] Better cycle statistics
-- [ ] Custom symptoms and tags
+- [ ] Custom symptoms and tags UI
 - [ ] Period editing and multi-day entry
-- [ ] Backup encryption
+- [ ] Encrypted backups
 - [ ] Backup schema/version migration
 - [ ] Local reminders where platform support allows
 - [ ] Better accessibility and keyboard support
-- [ ] Automated tests for prediction logic
-
-### V0.3
-- [ ] Partner mode with explicit sharing permissions
-- [ ] User-controlled encrypted backup targets
-- [ ] Offline backup files and restore validation
-- [ ] Optional WebDAV/Nextcloud adapter
-- [ ] Cloud-provider adapters that send backups directly to the user's provider
+- [ ] Automated prediction tests
+- [ ] Explicit partner sharing permissions
 
 ### V0.4
+- [ ] User-controlled encrypted backup destinations
+- [ ] WebDAV/Nextcloud adapter
+- [ ] Cloud-provider adapters that transfer backups directly to the user's provider
 - [ ] Anonymous community submissions
 - [ ] Anonymous replies
-- [ ] Moderation and abuse controls without requiring user profiles
-- [ ] Community privacy and retention policy
+- [ ] Moderation and abuse controls without profiles
 
 ### V0.5
 - [ ] Community Pro directory
@@ -102,29 +128,13 @@ Professional listings will be self-listed unless separately verified. A listing 
 - [ ] Optional Apple Health / Health Connect integrations, opt-in only
 - [ ] More knowledge categories and source search
 - [ ] Local encrypted data vault
-- [ ] Donation page / Buy Me a Coffee
+- [ ] Donation page
 
-## Research notes
+## Naming
 
-The architecture follows a local-first approach because IndexedDB provides structured client-side persistence and works without network availability, while service workers can cache application assets for offline use. Browser persistent storage can be requested but is not an absolute guarantee.
+Working product name: **NijRitu / निजऋतु**.
 
-Privacy concerns around period tracking are not theoretical. The FTC previously took action against Flo over sharing sensitive health information with analytics providers, and later litigation continued to focus on period and pregnancy data. Research presented through the FTC's PrivacyCon also found that data sharing and user control were major factors in privacy concern. These findings support Flow's data-minimization model.
-
-The product is not trying to compete with paid apps feature-for-feature. The goal is a useful, inspectable hobby project where core functionality remains free.
-
-## Development
-
-This first version is intentionally dependency-light and can be hosted as a static site.
-
-For local development, serve the repository over localhost rather than opening `index.html` directly so the service worker can register.
-
-Example:
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
+The name combines the idea of something belonging to oneself with the idea of a season or cycle. Trademark and domain clearance should be completed before public launch.
 
 ## License
 
