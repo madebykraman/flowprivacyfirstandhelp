@@ -1,7 +1,7 @@
 {
   "name":"nijritu",
   "private":true,
-  "version":"0.8.0",
+  "version":"0.8.1",
   "description":"NijRitu local-first cycle utility with privacy-separated public layers, portability and transparent privacy architecture",
   "scripts":{
     "test":"node tests/core.test.js && node tests/privacy-boundary.test.js && node backend/server.test.js",
