@@ -21,16 +21,22 @@ jobs:
         with:
           node-version: 22
       - name: Check JavaScript syntax
-        run: node --check app.js
-      - name: Check service worker syntax
-        run: node --check sw.js
+        run: |
+          node --check app.js
+          node --check core.js
+          node --check sw.js
+          node --check tests/core.test.js
+      - name: Run cycle engine tests
+        run: node tests/core.test.js
       - name: Check required launch files
         run: |
           test -f index.html
           test -f styles.css
           test -f app.js
+          test -f core.js
+          test -f tests/core.test.js
           test -f manifest.json
           test -f sw.js
-          test -f icon.svg
+          test -f privacy.html
       - name: Check manifest JSON
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('manifest.json valid')"
