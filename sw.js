@@ -1,5 +1,12 @@
-const CACHE='nijritu-static-v1.1.0';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./manifest.json','./icon.svg'];
+const CACHE='nijritu-static-v0.3';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./core.js','./v03.js','./v03-reminders.js','./manifest.json','./icon.svg'];
+const DB_NAME='nijritu-local';
+const STORE='state';
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==location.origin)return;event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(event.request,copy));return r}).catch(()=>caches.match('./index.html'))))});
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,4);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)}})}
+function readState(){return openDB().then(db=>new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).get('state');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}))}
+function localDate(timeZone){try{return new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}catch{return new Date().toISOString().slice(0,10)}}
+self.addEventListener('periodicsync',event=>{if(event.tag!=='nijritu-reminder')return;event.waitUntil((async()=>{try{const s=await readState();const r=s?.settings?.reminder;if(!r?.enabled)return;const date=localDate(r.timeZone);if(r.lastNotified===date)return;const today=s.logs?.[date];if(today?.period||today?.flow||today?.pain||today?.notes||(today?.symptoms||[]).length)return;await self.registration.showNotification('NijRitu',{body:'Take a moment to log today if you want to keep your cycle history current.',tag:'nijritu-daily-log',icon:'./icon.svg',data:{url:'./'}});const db=await openDB();const next=structuredClone(s);next.settings={...(next.settings||{}),reminder:{...r,lastNotified:date}};await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(next,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}catch(e){console.error('NijRitu reminder failed',e)}})() )});
+self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const client of list)if('focus' in client)return client.focus();return clients.openWindow('./')}))});
