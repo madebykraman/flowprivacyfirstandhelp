@@ -7,7 +7,8 @@ const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 
 const html=read('index.html');
 const manifest=JSON.parse(read('manifest.json'));
-const privateLayers=['app.js','core.js','v03.js','v03-reminders.js','v04.js','v05.js','v06-data.js','v07-experience.js','v08-trust.js','v10-brand-ritmi.js'];
+const privateLayers=['app.js','core.js','v03.js','v03-reminders.js','v06-data.js','v07-experience.js','v08-trust.js','v10-brand-ritmi.js'];
+const publicNetworkLayers=['v04.js','v05.js'];
 
 assert(!/<script[^>]+src=["']https?:\/\//i.test(html),'index.html must not load remote scripts');
 assert.equal(manifest.start_url,'./','PWA start_url must remain relative for project Pages');
@@ -15,11 +16,20 @@ assert.equal(manifest.display,'standalone','PWA must remain installable as a sta
 assert.equal(manifest.orientation,'portrait-primary','PWA must remain phone-first');
 assert.equal(manifest.short_name,'Ritmi','PWA brand must be Ritmi');
 assert.match(read('privacy.html'),/privacy/i,'privacy policy must exist');
+assert(!html.includes('v10-brand.js'),'obsolete Ritva brand shim must not be loaded');
+assert(!read('sw.js').includes("'./v10-brand.js'"),'service worker must not cache the obsolete Ritva brand shim');
+assert.match(html,/<title>Ritmi \| Your cycle\. Your data\.<\/title>/,'document title must use the current brand');
 
 for(const file of privateLayers){
   const source=read(file);
   assert(!/\bfetch\s*\(/.test(source),`${file} must not fetch network resources`);
   assert(!/XMLHttpRequest/.test(source),`${file} must not use XMLHttpRequest`);
+  assert(!/navigator\.sendBeacon/.test(source),`${file} must not beacon telemetry`);
+  assert(!/new\s+WebSocket\s*\(/.test(source),`${file} must not open WebSockets`);
+}
+
+for(const file of publicNetworkLayers){
+  const source=read(file);
   assert(!/navigator\.sendBeacon/.test(source),`${file} must not beacon telemetry`);
   assert(!/new\s+WebSocket\s*\(/.test(source),`${file} must not open WebSockets`);
 }
