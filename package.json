@@ -1,11 +1,11 @@
 {
   "name":"nijritu",
   "private":true,
-  "version":"0.6.0",
-  "description":"NijRitu local-first cycle utility with privacy-separated public layers and local data portability",
+  "version":"0.7.0",
+  "description":"NijRitu local-first cycle utility with privacy-separated public layers and a deliberately human product experience",
   "scripts":{
     "test":"node tests/core.test.js && node backend/server.test.js",
-    "check":"node --check app.js && node --check core.js && node --check v03.js && node --check v03-reminders.js && node --check v04.js && node --check v05.js && node --check v06-data.js && node --check sw.js && node --check backend/storage.js && node --check backend/server.js && node --check backend/server.test.js"
+    "check":"node --check app.js && node --check core.js && node --check v03.js && node --check v03-reminders.js && node --check v04.js && node --check v05.js && node --check v06-data.js && node --check v07-experience.js && node --check sw.js && node --check backend/storage.js && node --check backend/server.js && node --check backend/server.test.js"
   },
   "engines":{"node":">=20"}
 }
