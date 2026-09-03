@@ -12,75 +12,59 @@ The product boundary is intentional: the utility is local-first; public layers a
 
 ## Roadmap gate
 
-The implementation sequence is binding: **V0.2 → V0.3 → V0.4 → V0.5 → later platform integrations**. V0.4 and V0.5 feature work is now implemented as a continuous build milestone. Later integrations are not implied by the version label.
+Feature implementation has now progressed through **V0.6**. V0.4 remote backup/community, V0.5 Community Pro and V0.6 local data portability are implemented. Platform integrations remain deliberately later work.
 
-## Approved scope
+## Current scope
 
-| Area | Required direction | Current state |
-|---|---|---|
-| Cycle tracking | Period starts, period days, flow, pain, symptoms, notes | Implemented |
-| Calendar | Historical logs plus estimated next-period window | Implemented |
-| Predictions | Useful estimates, never medical certainty | Implemented with safety copy and robust baseline |
-| Insights | Cycle history, range, consistency, symptom and pain patterns | Implemented |
-| Knowledge | Source-linked education rather than copied medical authority | Implemented |
-| Local privacy | IndexedDB, no tracker account, no health backend | Implemented |
-| Backups | Plain export plus passphrase-encrypted export | Implemented |
-| Backup portability | Versioned format and validation | Implemented |
-| Partner mode | Explicit, selected-data, encrypted file transfer without shared account | Implemented |
-| Private display | Reduce visible identity/context on screen | Implemented |
-| Custom symptoms | Local symptom labels | Implemented |
-| Period editing | Range-based local period correction | Implemented |
-| Offline/PWA | Service-worker shell and install support | Implemented; V0.5 cache includes all client layers |
-| Local reminders | Explicit opt-in, best-effort browser background check | Implemented; browser-controlled timing |
-| Automated tests | Cycle-engine and backend contract coverage | Implemented in CI |
-| Accessibility | Semantic controls and accessible calendar labels | Implemented incrementally; final device audit remains a gate |
-| User-controlled backup destinations | WebDAV/Nextcloud plus encrypted relay option | Implemented client-side; provider-specific live testing remains a gate |
-| Community | Application-level anonymous identity, no profiles/follower graph/DMs, moderation | Implemented client and backend |
-| Community Pro | Professional directory, self-listing, credentials, verification, contact/booking | Implemented client and backend |
-| Apple Health / Health Connect | Optional, explicit opt-in integration | Planned later |
-| Donations | Donation support without subscriptions or advertising | Planned later |
+| Area | Current state |
+|---|---|
+| Local cycle tracker | Implemented |
+| Calendar, estimates and insights | Implemented |
+| Daily logging, custom symptoms and period editing | Implemented |
+| Plain/encrypted backup and partner share | Implemented |
+| WebDAV/Nextcloud and ciphertext-only relay backup | Implemented |
+| Moderated anonymous community | Implemented |
+| Community Pro professional directory | Implemented |
+| Professional self-listing and credential verification | Implemented |
+| PWA and opt-in best-effort reminders | Implemented |
+| Local CSV export | Implemented |
+| Local iCalendar export | Implemented, recorded period days only |
+| Automated cycle-engine/backend CI | Implemented |
+| Apple Health / Health Connect | Deliberately later |
+| Native packaging | Deliberately later |
+| Donations | Deliberately later |
 
-## V0.4 and V0.5 engineering notes
+## V0.4 / V0.5 verification
 
-The backend has a durable local JSON adapter for development, opaque encrypted relay storage, per-backup random access keys stored only as hashes, default relay expiry, exact-origin CORS, rate limiting, browser security headers and server-side moderation authentication.
+CI has successfully executed the V0.5 syntax checks, required-file checks, manifest validation and full cycle/backend test suite. The backend contract covers opaque backup storage, access-key authorization, expiry, CORS rejection, community moderation, replies, reports, professional listing moderation, credential verification and protected moderation endpoints. fileciteturn261file0L2-L10
 
-The public community exposes only approved posts and approved replies. Submissions and replies remain pending until moderation. Repeated reports move an approved post back into review. Application-level anonymity is explicitly not presented as network-level anonymity.
+V0.5 is structurally separated from private tracker data. The public professional endpoint exposes only approved and verified listings, while submissions remain pending until moderation. fileciteturn278file0L2-L2
 
-Community Pro is a separate public directory. Professionals can self-submit a listing with role, specialties, service area, credential details and optional public website/booking URL or email. Listings are pending by default. Moderators can approve and separately verify credentials. Only approved and verified listings enter the public directory. No private tracker fields are accepted by or attached to this model.
+## V0.6 data portability
 
-The browser client renders approved community content safely, searches the professional directory locally after retrieval, validates public contact fields and keeps the private tracker independent of public-layer availability.
+V0.6 adds local-only portability rather than sending data to a new service. CSV contains the currently stored date, period, flow, pain, symptoms and notes fields. iCalendar contains recorded period days only and deliberately excludes predictions. The export layer performs browser-side file generation and does not upload tracker data.
 
-## Security and privacy checks
+## Privacy/security checks
 
-1. Private cycle data is stored in IndexedDB under `nijritu-local`.
-2. There is no analytics SDK, advertising SDK, tracker account flow, or private health API endpoint.
-3. Plain exports are intentionally user-created files.
-4. Encrypted exports and remote backups use Web Crypto AES-GCM with random salt/IV and PBKDF2-SHA-256 key derivation.
-5. Backup passphrases are never stored by the V0.4/V0.5 client layer.
-6. Remote backup services receive ciphertext only and never attempt decryption.
-7. Relay backup retrieval and deletion require a separate random access key; only its SHA-256 hash is stored server-side.
-8. Relay backups receive a 90-day default expiry.
-9. Browser database contents are not described as encrypted merely because encrypted exports exist.
-10. Browser storage retention is not guaranteed; users are told to keep backups.
-11. Community and professional-directory data are separate from the private tracker model.
-12. Predictions are explicitly not contraception or diagnosis.
-13. Consecutive period days are treated as one period episode.
-14. Community posts and replies require moderation before publication.
-15. Professional directory listings require approval and credential verification before public display.
-16. Application-level anonymity is not represented as infrastructure-level anonymity.
-17. API responses use no-store caching and browser security headers.
-18. CORS rejects unexpected origins rather than reflecting arbitrary browser origins.
-
-## Automated verification
-
-The repository quality workflow checks syntax for all client layers, the service worker, backend and tests; executes the cycle-engine and backend contract suites; validates required launch files; and parses the manifest. V0.5 is included in syntax and launch-file coverage.
+1. Private cycle data remains in IndexedDB.
+2. No tracker account or private health-data backend is required.
+3. Remote backup services receive ciphertext only.
+4. Backup passphrases are not stored by the client backup layer.
+5. Relay retrieval/deletion uses a separate access key; only its hash is stored server-side.
+6. Community and professional-directory records are separate from tracker data.
+7. Community posts/replies require moderation before publication.
+8. Professional listings require approval and credential verification before public display.
+9. Application-level anonymity is not represented as infrastructure-level anonymity.
+10. Predictions remain estimates, not contraception or diagnosis.
+11. CSV and iCalendar exports are explicit user-created local files.
+12. PWA cache is versioned through V0.6.
 
 ## Remaining launch gates
 
-The feature roadmap for V0.4 and V0.5 is implemented. Remaining work is operational rather than another sequence of feature fragments: production-grade shared persistence/provider deployment, live WebDAV/provider testing, production CORS configuration, retention/deletion operations, moderation operations, final browser/device testing, support/privacy contact details, deployment verification and NijRitu name/domain/trademark clearance.
+The feature build is not being confused with operational launch readiness. Remaining work is production and validation: production-grade shared persistence/provider deployment, live WebDAV/Nextcloud testing, production CORS configuration, retention/deletion operations, moderation operations, final Safari iOS/Chrome Android/desktop testing, support/privacy contact details, deployment verification and NijRitu domain/trademark clearance.
 
-Apple Health, Health Connect, native packaging and donations remain deliberately outside V0.5.
+## Next major milestone
 
-## Final operational gate
+The next major feature family is **platform interoperability**, not another arbitrary minor tracker release. That means optional, explicit integrations with Apple Health and Android Health Connect, designed as adapters around the local data model rather than as a reason to move private tracking into a central NijRitu backend.
 
-Before public promotion, the owner needs the final real-device/live-environment checks: current Safari iOS, Chrome Android and desktop browsers; fresh-device backup/import/delete; PWA installation; notification behavior; production backend privacy/retention behavior; privacy policy/support contact; and domain/trademark clearance.
+Native packaging should follow only if the PWA proves useful. Donation support can be added independently without subscriptions, advertising or paid access to core tracking.
