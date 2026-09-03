@@ -1,5 +1,5 @@
-const CACHE='ritva-static-v0.10.0';
-const ASSETS=['./','./index.html','./styles.css','./v08-trust.css','./v09-premium.css','./v10-mobile.css','./app.js','./core.js','./v03.js','./v03-reminders.js','./v04.js','./v05.js','./v06-data.js','./v07-experience.js','./v08-trust.js','./manifest.json','./icon.svg','./404.html'];
+const CACHE='ritva-static-v0.10.1';
+const ASSETS=['./','./index.html','./styles.css','./v08-trust.css','./v09-premium.css','./v10-mobile.css','./v10-brand.js','./app.js','./core.js','./v03.js','./v03-reminders.js','./v04.js','./v05.js','./v06-data.js','./v07-experience.js','./v08-trust.js','./manifest.json','./icon.svg','./404.html'];
 const DB_NAME='nijritu-local';
 const STORE='state';
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
