@@ -1,11 +1,11 @@
 {
-  "name": "NijRitu | Private cycle tracking",
-  "short_name": "NijRitu",
+  "name": "Ritva | Private cycle tracking",
+  "short_name": "Ritva",
   "description": "Free, local-first cycle tracking with optional user-controlled backups.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f3f0ea",
-  "theme_color": "#201c1b",
+  "background_color": "#f6f1ea",
+  "theme_color": "#211b18",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
