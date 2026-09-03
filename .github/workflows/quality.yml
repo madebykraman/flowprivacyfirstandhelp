@@ -29,6 +29,7 @@ jobs:
           node --check v04.js
           node --check v05.js
           node --check v06-data.js
+          node --check v07-experience.js
           node --check sw.js
           node --check tests/core.test.js
           node --check backend/storage.js
@@ -47,6 +48,7 @@ jobs:
           test -f v04.js
           test -f v05.js
           test -f v06-data.js
+          test -f v07-experience.js
           test -f tests/core.test.js
           test -f backend/storage.js
           test -f backend/server.js
