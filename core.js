@@ -7,9 +7,9 @@
   const days=(a,b)=>Math.round((parse(b)-parse(a))/86400000);
   const average=(a,fallback)=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):fallback;
   const median=(a,fallback)=>{if(!a.length)return fallback;const x=[...a].sort((a,b)=>a-b),m=Math.floor(x.length/2);return x.length%2?x[m]:Math.round((x[m-1]+x[m])/2)};
-  function periodStarts(logs){return Object.entries(logs||{}).filter(([,v])=>v&&v.period).map(([k])=>k).sort()}
+  function periodStarts(logs){const out=[];for(const k of Object.keys(logs||{}).sort()){if(!logs[k]?.period)continue;const previous=add(k,-1);if(!logs[previous]?.period)out.push(k)}return out}
   function cycleLengths(logs){const s=periodStarts(logs);return s.slice(1).map((k,i)=>days(s[i],k)).filter(n=>n>=15&&n<=90)}
-  function periodDurations(logs){const out=[];for(const s of periodStarts(logs)){let n=0;for(let i=0;i<15;i++){const l=logs[add(s,i)];if(l&&l.period)n++;else if(i>0)break}if(n)out.push(n)}return out}
+  function periodDurations(logs){const out=[];for(const s of periodStarts(logs)){let n=0;for(let i=0;i<15;i++){const l=logs[add(s,i)];if(l?.period)n++;else if(i>0)break}if(n)out.push(n)}return out}
   function robustBaseline(values,fallback,min,max){return clamp(median(values,fallback),min,max)}
   function prediction(logs,profile){const starts=periodStarts(logs),lengths=cycleLengths(logs),cycle=robustBaseline(lengths,Number(profile?.cycleLength)||28,15,90);if(!starts.length)return null;const next=add(starts.at(-1),cycle);return {next,cycle,period:robustBaseline(periodDurations(logs),Number(profile?.periodLength)||5,1,15)} }
   function symptomFrequency(logs){const counts={};for(const v of Object.values(logs||{}))for(const s of Array.isArray(v?.symptoms)?v.symptoms:[])counts[s]=(counts[s]||0)+1;return Object.entries(counts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}
