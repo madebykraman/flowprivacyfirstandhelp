@@ -33,7 +33,7 @@ The implementation sequence is binding: **V0.2 → V0.3 → V0.4 → V0.5 → la
 | Period editing | Range-based local period correction without silently erasing unrelated history | Implemented in V0.3 |
 | Offline/PWA | Service-worker shell and install support | Implemented; V0.4 adds its client layer to the static app |
 | Local reminders | Explicit opt-in notifications, best-effort background check where browser permits | Implemented in V0.3; browser-controlled capability |
-| Automated tests | Pure cycle-engine regression tests plus backend contract tests | Implemented; GitHub workflow now executing |
+| Automated tests | Pure cycle-engine regression tests plus backend contract tests | Implemented; GitHub workflow executing |
 | Accessibility | Semantic controls and accessible calendar labels | Implemented incrementally; final cross-browser audit remains a launch gate |
 | User-controlled backup destinations | WebDAV/Nextcloud plus encrypted relay option | V0.4 client implemented; live provider/CORS testing remains a gate |
 | Community | Anonymous application-level identity, no profiles/follower graph/DMs, moderation | V0.4 client and backend implemented; production operations still required |
@@ -43,9 +43,9 @@ The implementation sequence is binding: **V0.2 → V0.3 → V0.4 → V0.5 → la
 
 ## V0.4 engineering notes
 
-`backend/storage.js` provides a durable local JSON adapter with atomic replacement for local development. `backend/server.js` uses that adapter, stores only opaque encrypted backup payloads, applies expiry checks and basic per-IP rate limits, and separates pending community submissions/replies from the approved feed.
+`backend/storage.js` provides a durable local JSON adapter with atomic replacement for local development. `backend/server.js` stores only opaque encrypted backup payloads, protects backup retrieval/deletion with a separate 256-bit access key, expires relay backups after 90 days by default, applies basic per-IP rate limits, rejects unexpected CORS origins and disables moderation authentication when no server-side admin token is configured.
 
-The community feed exposes only approved top-level posts. Moderation endpoints are protected by a server-side bearer token. The token is never placed in frontend code. Production deployments still need a shared/durable rate-limit mechanism, operational moderation, retention/deletion policy, abuse monitoring and a production-grade database/provider adapter.
+The community feed exposes only approved top-level posts and approved replies. Moderation endpoints are protected by a server-side bearer token. The token is never placed in frontend code. Repeated reports move an approved post back into review. Production deployments still need a shared/durable rate-limit mechanism, operational moderation, retention/deletion policy, abuse monitoring and a production-grade database/provider adapter.
 
 `v04.js` adds browser-side AES-GCM/PBKDF2 encrypted backup creation, direct WebDAV/Nextcloud upload/restore, an optional ciphertext-only NijRitu relay, and the first community client. WebDAV credentials are entered for the operation and are not stored by this layer. Direct WebDAV use depends on the user's storage provider allowing browser CORS.
 
@@ -57,18 +57,21 @@ The community feed exposes only approved top-level posts. Moderation endpoints a
 4. Encrypted exports and V0.4 remote backups use Web Crypto AES-GCM with random salt/IV and PBKDF2-SHA-256 key derivation.
 5. The passphrase is never stored by the V0.4 backup layer.
 6. Remote backup endpoints receive ciphertext only and never attempt to decrypt it.
-7. Encrypted share files contain only the selected cycle fields and are intended to be transferred by users through a channel they trust.
-8. The browser database is not represented as encrypted merely because encrypted exports exist.
-9. Browser storage retention is not guaranteed; the UI tells users to keep backups.
-10. Public community and professional-directory data are kept outside the private tracker model.
-11. Predictions are explicitly not contraception or diagnosis.
-12. Period start detection treats consecutive period days as one period episode rather than multiple cycle starts.
-13. Community posts and replies are pending until moderation approves them.
-14. Application-level anonymity is not presented as infrastructure-level anonymity.
+7. Relay backup retrieval and deletion require a separate random access key; only its SHA-256 hash is stored server-side.
+8. Relay backups receive a 90-day default expiry unless the caller supplies a valid expiry date.
+9. The browser database is not represented as encrypted merely because encrypted exports exist.
+10. Browser storage retention is not guaranteed; the UI tells users to keep backups.
+11. Public community and professional-directory data are kept outside the private tracker model.
+12. Predictions are explicitly not contraception or diagnosis.
+13. Period start detection treats consecutive period days as one period episode rather than multiple cycle starts.
+14. Community posts and replies are pending until moderation approves them.
+15. Application-level anonymity is not presented as infrastructure-level anonymity.
+16. API responses include no-store caching and basic browser isolation/security headers.
+17. Configured CORS is exact-origin rather than reflecting arbitrary browser origins.
 
 ## Automated verification
 
-The repository quality workflow checks syntax for the app, cycle engine, enhancement layers, service worker, backend and tests; executes the cycle-engine and backend contract suites; validates required files; and parses the manifest. A GitHub Actions run is now present for the latest push and was observed in progress. It is not marked passed until GitHub reports a successful conclusion.
+The repository quality workflow checks syntax for the app, cycle engine, enhancement layers, service worker, backend and tests; executes the cycle-engine and backend contract suites; validates required files; and parses the manifest. The latest quality run completed successfully after the V0.4 backend hardening.
 
 ## What is not being falsely marked launch-ready
 
