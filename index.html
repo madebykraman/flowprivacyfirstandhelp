@@ -3,22 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#111111">
-  <meta name="description" content="Flow is a free, local-first cycle tracker. Your personal tracking data stays on your device.">
+  <meta name="theme-color" content="#171717">
+  <meta name="description" content="NijRitu is a free local-first cycle tracker. Your personal tracking data stays on your device.">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
-  <title>Flow | Private cycle tracking</title>
+  <title>NijRitu | Your cycle. Your data.</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">flow</span><span class="privacy-pill">local first</span></div>
-      <button class="icon-button" id="installBtn" hidden aria-label="Install Flow">Install</button>
+      <div class="brand"><span class="brand-mark">nijritu</span><span class="privacy-pill">your data · your choice</span></div>
+      <button class="icon-button" id="installBtn" hidden aria-label="Install NijRitu">Install</button>
     </header>
-
     <main id="app" class="main" aria-live="polite"></main>
-
     <nav class="bottom-nav" aria-label="Primary navigation">
       <button data-view="track" class="nav-item active"><span>◷</span><small>Track</small></button>
       <button data-view="knowledge" class="nav-item"><span>⌕</span><small>Knowledge</small></button>
@@ -27,7 +25,6 @@
       <button data-view="settings" class="nav-item"><span>⚙</span><small>Settings</small></button>
     </nav>
   </div>
-
   <dialog id="logDialog" class="dialog">
     <form method="dialog" id="logForm">
       <div class="dialog-head"><div><p class="eyebrow">Daily log</p><h2 id="logTitle">Log today</h2></div><button class="close" value="cancel" aria-label="Close">×</button></div>
@@ -42,12 +39,11 @@
       <div class="dialog-actions"><button class="button ghost" value="cancel">Cancel</button><button class="button primary" value="default">Save locally</button></div>
     </form>
   </dialog>
-
   <dialog id="onboarding" class="dialog onboarding">
     <form method="dialog" id="onboardingForm">
-      <p class="eyebrow">Welcome to Flow</p>
-      <h1>Tracking without the baggage.</h1>
-      <p class="muted">Your tracking data is kept in this browser. No account is required. Nothing is sent to Flow's servers.</p>
+      <p class="eyebrow">Welcome to NijRitu</p>
+      <h1>Your cycle. Your data. Your choice.</h1>
+      <p class="muted">A free personal tracker without an account, advertising profile or health-data backend. Your private tracking data stays in this browser.</p>
       <label class="field"><span>Who are you tracking?</span><select id="profileMode"><option value="self">My cycle</option><option value="partner">Someone else's cycle</option></select></label>
       <label class="field"><span>Name or nickname <em>optional</em></span><input id="profileName" maxlength="40" placeholder="e.g. Me, her, Alex"></label>
       <label class="field"><span>Last period started</span><input id="onboardStart" type="date"></label>
@@ -59,7 +55,6 @@
       <button class="button primary full" value="default">Start tracking</button>
     </form>
   </dialog>
-
   <script src="app.js"></script>
 </body>
 </html>
