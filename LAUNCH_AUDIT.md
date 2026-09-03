@@ -31,50 +31,48 @@ The implementation sequence is binding: **V0.2 → V0.3 → V0.4 → V0.5 → la
 | Private display | Reduce visible identity/context on screen | Implemented |
 | Custom symptoms | Local symptom labels | Implemented |
 | Period editing | Range-based local period correction without silently erasing unrelated history | Implemented in V0.3 |
-| Offline/PWA | Service-worker shell and install support | Implemented; V0.3 assets included |
+| Offline/PWA | Service-worker shell and install support | Implemented; V0.4 adds its client layer to the static app |
 | Local reminders | Explicit opt-in notifications, best-effort background check where browser permits | Implemented in V0.3; browser-controlled capability |
-| Automated tests | Pure cycle-engine regression tests | Implemented in V0.3; GitHub workflow configured |
+| Automated tests | Pure cycle-engine regression tests plus backend contract tests | Implemented; GitHub workflow now executing |
 | Accessibility | Semantic controls and accessible calendar labels | Implemented incrementally; final cross-browser audit remains a launch gate |
-| Community | Anonymous, no profiles, no follower graph, no DMs | V0.4 backend contract/scaffold started; not production-ready |
+| User-controlled backup destinations | WebDAV/Nextcloud plus encrypted relay option | V0.4 client implemented; live provider/CORS testing remains a gate |
+| Community | Anonymous application-level identity, no profiles/follower graph/DMs, moderation | V0.4 client and backend implemented; production operations still required |
 | Community Pro | Professional directory, self-listing then verification | Planned V0.5 |
-| User-controlled backup destinations | WebDAV/Nextcloud/cloud adapters | V0.4 architecture required; provider integration still in progress |
 | Apple Health / Health Connect | Optional, explicit opt-in integration | Planned later |
 | Donations | Donation support without subscriptions or advertising | Planned later |
 
-## V0.3 engineering notes
+## V0.4 engineering notes
 
-The cycle engine is isolated in `core.js` as pure, testable functions. The enhancement layer in `v03.js` consumes that engine without moving private health data to a backend. `v03-reminders.js` adds timezone-aware local reminder metadata and capability-gated registration.
+`backend/storage.js` provides a durable local JSON adapter with atomic replacement for local development. `backend/server.js` uses that adapter, stores only opaque encrypted backup payloads, applies expiry checks and basic per-IP rate limits, and separates pending community submissions/replies from the approved feed.
 
-The reminder implementation deliberately uses the browser's supported notification/background facilities rather than pretending a web page can guarantee an exact alarm while closed. Browser scheduling and permissions remain authoritative.
+The community feed exposes only approved top-level posts. Moderation endpoints are protected by a server-side bearer token. The token is never placed in frontend code. Production deployments still need a shared/durable rate-limit mechanism, operational moderation, retention/deletion policy, abuse monitoring and a production-grade database/provider adapter.
 
-## V0.4 engineering started
-
-`backend/README.md` records the backend contract. `backend/server.js` is a local development/test implementation for the public boundary and opaque encrypted backup records. It is deliberately not described as production persistence: its in-memory store disappears when the process stops. A production adapter and durable provider must be implemented and tested before V0.4 can be considered complete.
-
-The backend contract requires ciphertext-only remote private backups and keeps community data outside the private tracker model. Community identity is application-level anonymous, not a claim that network infrastructure cannot observe technical metadata.
+`v04.js` adds browser-side AES-GCM/PBKDF2 encrypted backup creation, direct WebDAV/Nextcloud upload/restore, an optional ciphertext-only NijRitu relay, and the first community client. WebDAV credentials are entered for the operation and are not stored by this layer. Direct WebDAV use depends on the user's storage provider allowing browser CORS.
 
 ## Security and privacy checks
 
 1. Private cycle data is stored in IndexedDB under `nijritu-local`.
 2. The code contains no analytics SDK, advertising SDK, tracker account flow, or private health API endpoint.
 3. Plain exports are intentionally user-created files.
-4. Encrypted exports use Web Crypto AES-GCM with a random salt and IV and PBKDF2-SHA-256 key derivation.
-5. The passphrase is never stored by the app.
-6. Encrypted share files contain only the selected cycle fields and are intended to be transferred by users through a channel they trust.
-7. The browser database is not represented as encrypted merely because encrypted exports exist.
-8. Browser storage retention is not guaranteed; the UI tells users to keep backups.
-9. Public community and professional-directory data are kept outside the private tracker model.
-10. Predictions are explicitly not contraception or diagnosis.
-11. Period start detection treats consecutive period days as one period episode rather than multiple cycle starts.
-12. The V0.4 server contract rejects backup requests that do not provide an opaque ciphertext field and never attempts to decrypt it.
+4. Encrypted exports and V0.4 remote backups use Web Crypto AES-GCM with random salt/IV and PBKDF2-SHA-256 key derivation.
+5. The passphrase is never stored by the V0.4 backup layer.
+6. Remote backup endpoints receive ciphertext only and never attempt to decrypt it.
+7. Encrypted share files contain only the selected cycle fields and are intended to be transferred by users through a channel they trust.
+8. The browser database is not represented as encrypted merely because encrypted exports exist.
+9. Browser storage retention is not guaranteed; the UI tells users to keep backups.
+10. Public community and professional-directory data are kept outside the private tracker model.
+11. Predictions are explicitly not contraception or diagnosis.
+12. Period start detection treats consecutive period days as one period episode rather than multiple cycle starts.
+13. Community posts and replies are pending until moderation approves them.
+14. Application-level anonymity is not presented as infrastructure-level anonymity.
 
 ## Automated verification
 
-The repository quality workflow checks syntax for the app, cycle engine, enhancement layers, service worker, backend and tests; executes the cycle-engine and backend contract suites; validates required files; and parses the manifest. GitHub Actions still has not produced a verifiable run in the connector, so CI is not described as passed until an actual run is observed.
+The repository quality workflow checks syntax for the app, cycle engine, enhancement layers, service worker, backend and tests; executes the cycle-engine and backend contract suites; validates required files; and parses the manifest. A GitHub Actions run is now present for the latest push and was observed in progress. It is not marked passed until GitHub reports a successful conclusion.
 
 ## What is not being falsely marked launch-ready
 
-The anonymous public community, durable remote backup provider, Community Pro verification, and native Apple Health / Health Connect integrations require additional implementation, infrastructure, platform permissions or operational policies. They remain explicitly incomplete until tested end-to-end.
+V0.4 still has explicit operational gates: production-grade durable/shared persistence, live provider integration testing, production CORS/security configuration, retention/deletion operations, moderation operations, final browser testing and deployment verification. Community Pro verification and native Apple Health / Health Connect integrations remain later roadmap work.
 
 ## Final operational gate
 
