@@ -30,6 +30,7 @@ jobs:
           node --check v05.js
           node --check v06-data.js
           node --check v07-experience.js
+          node --check v08-trust.js
           node --check sw.js
           node --check tests/core.test.js
           node --check backend/storage.js
@@ -41,6 +42,7 @@ jobs:
         run: |
           test -f index.html
           test -f styles.css
+          test -f v08-trust.css
           test -f app.js
           test -f core.js
           test -f v03.js
@@ -49,6 +51,7 @@ jobs:
           test -f v05.js
           test -f v06-data.js
           test -f v07-experience.js
+          test -f v08-trust.js
           test -f tests/core.test.js
           test -f backend/storage.js
           test -f backend/server.js
