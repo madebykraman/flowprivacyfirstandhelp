@@ -4,7 +4,7 @@
 
 NijRitu should feel like a quiet personal instrument, not a health dashboard.
 
-The interface takes cues from the strongest ideas in current cycle tracking: Apple's restrained health utility model, Clue's science-forward clarity, privacy-first local products such as Ovumcy, and the more editorial/ritual visual language seen in Stardust. Research on menstrual-tracking UX consistently points toward simplicity, personal context and respect for the sensitivity of the data. citeturn0search1turn0search3turn0search4
+The interface takes cues from strong ideas in current cycle tracking: Apple's restrained health utility model, Clue's science-forward clarity, privacy-first local products such as Ovumcy, and the more editorial/ritual visual language seen in Stardust. Research on menstrual-tracking UX consistently points toward simplicity, personal context and respect for the sensitivity of the data.
 
 The deliberate departure is structural: NijRitu does not treat every feature as a card. The page is the canvas. Content earns space according to importance.
 
@@ -89,7 +89,7 @@ Avoid:
 
 ## Competitive lessons
 
-Apple demonstrates the value of making cycle tracking part of a broader health utility without turning the interaction into a social feed. Clue demonstrates clear tracking categories and an information-first approach. Privacy-first projects such as Ovumcy demonstrate that local-first architecture can be a product principle rather than a footnote. Stardust demonstrates the power of a distinct emotional visual identity, while its category also shows why privacy claims need to be backed by concrete boundaries. citeturn0search1turn0search3turn0search9turn0search10
+Apple demonstrates the value of making cycle tracking part of a broader health utility without turning the interaction into a social feed. Clue demonstrates clear tracking categories and an information-first approach. Privacy-first projects such as Ovumcy demonstrate that local-first architecture can be a product principle rather than a footnote. Stardust demonstrates the power of a distinct emotional visual identity, while the category also shows why privacy claims need concrete boundaries.
 
 NijRitu combines those lessons with a stricter constraint: private tracking should remain useful even if the public/community parts of the product disappear.
 
