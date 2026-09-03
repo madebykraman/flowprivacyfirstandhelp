@@ -1,4 +1,4 @@
-const CACHE='ritmi-static-v0.10.2';
+const CACHE='ritmi-static-v0.11.0';
 const ASSETS=['./','./index.html','./styles.css','./v08-trust.css','./v09-premium.css','./v10-mobile.css','./v10-brand-ritmi.js','./app.js','./core.js','./v03.js','./v03-reminders.js','./v04.js','./v05.js','./v06-data.js','./v07-experience.js','./v08-trust.js','./manifest.json','./icon.svg','./404.html'];
 const DB_NAME='nijritu-local';
 const STORE='state';
