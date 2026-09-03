@@ -35,6 +35,8 @@ Apple Health, Android Health Connect and native packaging are deliberately defer
 | Origin story page | Implemented |
 | Voluntary support page and persistent footer | Implemented, payment destinations awaiting final links |
 | Privacy architecture / data map | Implemented |
+| Privacy boundary acceptance tests | Implemented |
+| Branded 404 fallback | Implemented |
 | Automated cycle-engine/backend CI | Implemented |
 | Apple Health / Health Connect | Deferred by product decision |
 | Native packaging | Deferred |
@@ -55,7 +57,9 @@ The interface was rebuilt around editorial hierarchy instead of an equal-weight 
 
 ## V0.8 trust layer
 
-The new privacy architecture surface maps three boundaries: local browser storage, user-selected export/backup destinations and separate public layers. It explicitly lists what is stored locally, what can leave only through an explicit action, and what NijRitu does not require.
+The privacy architecture surface maps three boundaries: local browser storage, user-selected export/backup destinations and separate public layers. It explicitly lists what is stored locally, what can leave only through an explicit action, and what NijRitu does not require.
+
+A navigation collision found during audit was fixed so the V0.8 trust surface is handled independently from the older V0.7 special-page router.
 
 This layer intentionally contains no tracker-data upload, account system, health-platform connection or new server-side health store.
 
@@ -74,7 +78,12 @@ This layer intentionally contains no tracker-data upload, account system, health
 11. CSV and iCalendar exports are explicit user-created local files.
 12. PWA cache is versioned through V0.8.
 13. Story, support and trust surfaces do not request tracker data.
-14. Apple Health / Health Connect integration is not present, by deliberate product decision.
+14. The private client layers are covered by a static privacy-boundary test that rejects remote script loading, network requests and telemetry primitives.
+15. Apple Health / Health Connect integration is not present, by deliberate product decision.
+
+## Deployment
+
+The Pages workflow now follows GitHub's current custom-workflow pattern: explicit `pages: write` and `id-token: write` permissions, `configure-pages`, Pages artifact upload and `deploy-pages`. The workflow no longer asks `configure-pages` to enable the Pages site itself, avoiding an unnecessary settings mutation during deployment. GitHub still requires the repository Pages publishing source to be configured for GitHub Actions. citeturn0search0turn0search1
 
 ## Remaining launch gates
 
