@@ -1,4 +1,4 @@
-name: Deploy NijRitu
+name: Deploy Ritmi
 
 on:
   push:
