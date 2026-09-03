@@ -83,7 +83,7 @@ This layer intentionally contains no tracker-data upload, account system, health
 
 ## Deployment
 
-The Pages workflow now follows GitHub's current custom-workflow pattern: explicit `pages: write` and `id-token: write` permissions, `configure-pages`, Pages artifact upload and `deploy-pages`. The workflow no longer asks `configure-pages` to enable the Pages site itself, avoiding an unnecessary settings mutation during deployment. GitHub still requires the repository Pages publishing source to be configured for GitHub Actions. citeturn0search0turn0search1
+The Pages workflow now follows GitHub's current custom-workflow pattern: explicit `pages: write` and `id-token: write` permissions, `configure-pages`, Pages artifact upload and `deploy-pages`. The workflow no longer asks `configure-pages` to enable the Pages site itself, avoiding an unnecessary settings mutation during deployment. GitHub still requires the repository Pages publishing source to be configured for GitHub Actions.
 
 ## Remaining launch gates
 
