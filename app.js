@@ -1,54 +1,324 @@
-const DB_NAME='nijritu-local';
-const DB_VERSION=4; const STORE='state'; const APP_VERSION='1.1.0';
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], clone=o=>structuredClone(o);
-const DEFAULT={version:APP_VERSION,profile:null,logs:{},customSymptoms:['Cramps','Headache','Bloating','Breast tenderness','Fatigue','Mood changes'],settings:{persistentStorageRequested:false,privacyMode:false}};
-let state=clone(DEFAULT),view='track',month=new Date(new Date().getFullYear(),new Date().getMonth(),1),installPrompt=null;
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-async function dbGet(){const d=await openDB();return new Promise((res,rej)=>{const r=d.transaction(STORE,'readonly').objectStore(STORE).get('state');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-async function dbPut(v){const d=await openDB();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,'state');t.oncomplete=res;t.onerror=()=>rej(t.error);});}
-async function save(){await dbPut(state)}
-function normalize(x){const base=clone(DEFAULT);const logs=x&&typeof x.logs==='object'?x.logs:{};return {...base,...x,version:APP_VERSION,logs,customSymptoms:Array.isArray(x?.customSymptoms)&&x.customSymptoms.length?x.customSymptoms:base.customSymptoms,settings:{...base.settings,...(x?.settings||{})}}}
-async function load(){const x=await dbGet();if(x)state=normalize(x)}
-const today=()=>key(new Date());
-function key(d){d=new Date(d);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function parse(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)}
-function add(k,n){const d=parse(k);d.setDate(d.getDate()+n);return key(d)}
-function days(a,b){return Math.round((parse(b)-parse(a))/86400000)}
-function fmt(k,opt={day:'numeric',month:'short'}){return k?parse(k).toLocaleDateString(undefined,opt):'Not set'}
-function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function avg(a,f){return a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):f}
-function starts(){return Object.entries(state.logs).filter(([,x])=>x?.period).map(([k])=>k).sort()}
-function cycleLengths(){const s=starts();return s.slice(1).map((k,i)=>days(s[i],k)).filter(n=>n>=15&&n<=90).slice(-8)}
-function periodDurations(){const out=[];for(const s of starts()){let n=0;for(let i=0;i<15;i++){const l=state.logs[add(s,i)];if(l?.period)n++;else if(i>0)break}if(n)out.push(n)}return out.slice(-8)}
-function metrics(){const ss=starts(),ls=cycleLengths(),pd=periodDurations(),cycle=Math.max(15,Math.min(90,Number(state.profile?.cycleLength)||avg(ls,28))),period=Math.max(1,Math.min(15,Number(state.profile?.periodLength)||avg(pd,5))),last=ss.at(-1)||null,next=last?add(last,cycle):null,cd=last?days(last,today())+1:null;let consistency='Not enough history';if(ls.length>=2){const spread=Math.max(...ls)-Math.min(...ls);consistency=Math.max(0,Math.min(100,Math.round(100-spread*5)))}return{ss,ls,pd,cycle,period,last,next,cd,consistency}}
-function phase(d,l){if(!d)return'No cycle logged';if(d<=5)return'Menstrual';if(d<=Math.round(l*.5))return'Follicular estimate';if(d<=Math.round(l*.6))return'Ovulatory estimate';return'Luteal estimate'}
-function predicted(){const m=metrics();return m.next?Array.from({length:m.period},(_,i)=>add(m.next,i)):[]}
-function render(){const pages={track,insights,knowledge,community,settings};$('#app').innerHTML=(pages[view]||track)();$$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view));bind()}
-function track(){const m=metrics(),l=state.logs[today()]||{};return `<section class="view-head"><div><p class="eyebrow">${esc(state.profile?.name||(state.profile?.mode==='partner'?'Her cycle':'My cycle'))}</p><h1>Track</h1></div><button class="button accent" data-action="log" data-date="${today()}">Log today</button></section><div class="grid"><article class="card hero"><div><p class="eyebrow">Current cycle</p><div class="metric">${m.cd||'—'}</div><div class="metric-label">cycle day · ${phase(m.cd,m.cycle)}</div></div><div class="row"><div><strong>${m.next?fmt(m.next,{weekday:'short',day:'numeric',month:'short'}):'Add a period start'}</strong><div class="metric-label">estimated next period</div></div><button class="button primary small" data-action="log" data-date="${today()}">Quick log</button></div></article><article class="card side"><p class="eyebrow">At a glance</p><div class="stat-list"><div class="stat row"><span>Typical cycle</span><strong>${m.cycle} days</strong></div><div class="stat row"><span>Typical period</span><strong>${m.period} days</strong></div><div class="stat row"><span>Next period</span><strong>${m.next?Math.max(0,days(today(),m.next))+' days':'Not set'}</strong></div><div class="stat row"><span>Starts recorded</span><strong>${m.ss.length}</strong></div></div></article><article class="card calendar-card"><div class="row"><div><p class="eyebrow">Calendar</p><h2 class="section-title">${month.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2></div><div><button class="button ghost small" data-action="prev">Prev</button> <button class="button ghost small" data-action="next">Next</button></div></div>${calendar()}</article><article class="card"><p class="eyebrow">Today</p><h2 class="section-title">${fmt(today(),{weekday:'long',day:'numeric',month:'long'})}</h2>${l.flow||l.pain||l.symptoms?.length||l.notes||l.period?`<div class="stat-list"><div class="stat row"><span>Period</span><strong>${l.period?'Yes':'No'}</strong></div><div class="stat row"><span>Flow</span><strong>${esc(l.flow||'Not logged')}</strong></div><div class="stat row"><span>Pain</span><strong>${esc(l.pain||'Not logged')}</strong></div><div class="stat row"><span>Symptoms</span><strong>${esc((l.symptoms||[]).join(', ')||'None')}</strong></div>${l.notes?`<div class="stat"><span>Notes</span><p class="muted">${esc(l.notes)}</p></div>`:''}</div>`:'<div class="empty">Nothing logged today.</div>'}</article><article class="card"><p class="eyebrow">Privacy</p><h2 class="section-title">The private part stays private.</h2><p class="muted">Your cycle data is stored locally in this browser. NijRitu does not need a tracker account or health-data backend.</p><button class="button ghost" data-view-target="settings">Data & backups</button></article></div>`}
-function calendar(){const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),off=first.getDay(),total=Math.ceil((off+last.getDate())/7)*7,p=new Set(predicted()),head=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="cal-label">${x}</div>`);for(let i=0;i<total;i++){if(i<off||i>=off+last.getDate()){head.push('<div></div>');continue}const k=key(new Date(y,m,i-off+1)),l=state.logs[k],c=['day'];if(k===today())c.push('today');if(l?.period)c.push('period');else if(p.has(k))c.push('predicted');head.push(`<button aria-label="Log ${fmt(k,{day:'numeric',month:'long'})}" class="${c.join(' ')}" data-action="log" data-date="${k}"><span>${i-off+1}</span>${l?'<span class="dot"></span>':''}</button>`)}return `<div class="calendar">${head.join('')}</div><div class="legend"><span><i class="legend-dot period"></i>Logged period</span><span><i class="legend-dot predicted"></i>Estimated</span></div>`}
-function insights(){const m=metrics(),pain=Object.values(state.logs).filter(x=>x?.pain&&x.pain!=='None').length,counts={};Object.values(state.logs).forEach(l=>(l?.symptoms||[]).forEach(s=>counts[s]=(counts[s]||0)+1));const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);return `<section class="view-head"><div><p class="eyebrow">Patterns, not diagnoses</p><h1>Insights</h1></div></section><div class="grid"><article class="card hero"><p class="eyebrow">Cycle history</p><div class="metric">${m.ss.length}</div><div class="metric-label">period starts recorded</div><div class="insight-line"><span>Typical cycle</span><strong>${m.cycle} days</strong></div><div class="insight-line"><span>Observed range</span><strong>${m.ls.length?Math.min(...m.ls)+'–'+Math.max(...m.ls)+' days':'Not enough data'}</strong></div></article><article class="card side"><p class="eyebrow">Consistency</p><div class="metric compact">${typeof m.consistency==='number'?m.consistency+'%':'—'}</div><p class="muted">A simple indicator based on the spread of recorded cycle lengths. It is not a medical measure.</p></article><article class="card"><p class="eyebrow">Symptoms</p><h2 class="section-title">Most logged</h2>${top.length?`<div class="stat-list">${top.map(([s,n])=>`<div class="stat row"><span>${esc(s)}</span><strong>${n}</strong></div>`).join('')}</div>`:'<div class="empty">Log symptoms over time to see patterns.</div>'}</article><article class="card"><p class="eyebrow">Pain</p><h2 class="section-title">Logged pain days</h2><div class="metric compact">${pain}</div><p class="muted">A count of entries where pain was recorded. It is not a severity assessment.</p></article><article class="card" style="grid-column:span 12"><div class="notice">Predictions are estimates from your recorded history and baseline settings. Cycles vary naturally. Do not use NijRitu predictions as contraception or as a diagnosis.</div></article></div>`}
-function knowledge(){const a=[['Menstruation and the menstrual cycle','ACOG','https://www.acog.org/womens-health/faqs/menstruation-and-the-menstrual-cycle'],['Periods','NHS','https://www.nhs.uk/conditions/periods/'],['Period problems','NHS','https://www.nhs.uk/conditions/periods/period-problems/'],['Endometriosis','WHO','https://www.who.int/news-room/fact-sheets/detail/endometriosis'],['PCOS','Office on Women’s Health','https://womenshealth.gov/a-z-topics/polycystic-ovary-syndrome'],['Menstrual cramps','Cleveland Clinic','https://my.clevelandclinic.org/health/diseases/4148-menstrual-cramps']];return `<section class="view-head"><div><p class="eyebrow">Original sources</p><h1>Knowledge</h1></div></section><div class="notice">NijRitu points to the original publisher instead of presenting its own medical authority. Check the source itself for current information.</div><div class="article-grid">${a.map(x=>`<a class="card article" href="${x[2]}" target="_blank" rel="noopener noreferrer"><span class="tag">${x[1]}</span><h3>${x[0]}</h3><p>Open the original source for evidence-based information.</p><p class="read-link">Read source ↗</p></a>`).join('')}</div>`}
-function community(){return `<section class="view-head"><div><p class="eyebrow">Privacy before growth</p><h1>Community</h1></div></section><div class="grid"><article class="card hero"><p class="eyebrow">Launch boundary</p><h2 class="section-title large-title">A community without profiles.</h2><p class="muted">Private tracking is fully usable without a server. The public community is intentionally held back until it can support anonymous application identity, abuse controls and a documented metadata and retention policy.</p><div><span class="tag">No profiles</span> <span class="tag">No follower graph</span> <span class="tag">No DMs</span></div></article><article class="card side"><p class="eyebrow">Community Pro</p><h2 class="section-title">Professional directory</h2><p class="muted">A separate directory can list professionals with qualifications, registration details where applicable and contact links. It must never expose tracker data.</p><span class="tag">Separate public layer</span></article><article class="card" style="grid-column:span 12"><div class="notice">We will not call a server-backed board “anonymous” until its technical privacy model is honest and documented.</div></article></div>`}
-function settings(){return `<section class="view-head"><div><p class="eyebrow">Control stays with you</p><h1>Settings</h1></div></section><div class="grid"><article class="card"><p class="eyebrow">Profile</p><h2 class="section-title">Tracking setup</h2><p class="muted">Change nickname, tracking mode and baseline cycle assumptions.</p><button class="button ghost" data-action="profile">Edit setup</button></article><article class="card"><p class="eyebrow">Backup</p><h2 class="section-title">Take it with you.</h2><p class="muted">Export a normal JSON backup or an encrypted backup protected by a passphrase.</p><div class="button-row"><button class="button primary" data-action="export">Export</button><button class="button ghost" data-action="encrypt">Encrypted</button><label class="button ghost file-button">Import<input class="hidden" id="importFile" type="file" accept="application/json,.json,.njr"></label></div></article><article class="card"><p class="eyebrow">Partner mode</p><h2 class="section-title">Share selected data.</h2><p class="muted">Create an encrypted share file containing selected cycle data. The recipient imports it on their own device. No shared account is required.</p><button class="button ghost" data-action="share">Create encrypted share</button></article><article class="card"><p class="eyebrow">Symptoms</p><h2 class="section-title">Your own symptom list</h2><p class="muted">Add or remove local symptom labels. They never leave this browser unless you explicitly export or share them.</p><div class="button-row"><input id="customSymptom" class="inline-input" maxlength="40" placeholder="Add symptom"><button class="button ghost" data-action="addSymptom">Add</button></div><div class="tag-list">${state.customSymptoms.map(s=>`<button class="tag removable" data-action="removeSymptom" data-symptom="${encodeURIComponent(s)}" title="Remove ${esc(s)}">${esc(s)} ×</button>`).join('')}</div></article><article class="card"><p class="eyebrow">Storage</p><h2 class="section-title">Protect local storage.</h2><p class="muted">Your browser may allow NijRitu to request persistent storage. Keep backups anyway.</p><button class="button ghost" data-action="persist">Request persistent storage</button></article><article class="card"><p class="eyebrow">Private display</p><h2 class="section-title">Reduce visible context.</h2><p class="muted">Private display hides the saved nickname and switches sensitive labels to generic wording. It does not encrypt the browser database.</p><button class="button ghost" data-action="privacy">${state.settings.privacyMode?'Turn off':'Turn on'} private display</button></article><article class="card"><p class="eyebrow">Data</p><h2 class="section-title">Delete everything</h2><p class="muted">Permanently remove NijRitu data from this browser. Export first if you may need it.</p><button class="button danger-button" data-action="reset">Delete local data</button></article><article class="card" style="grid-column:span 12"><p class="eyebrow">The principle</p><h2 class="section-title">Liberate the data.</h2><p class="muted">The utility should work without requiring a company to own the health history.</p></article></div>`}
-function openLog(k){const l=state.logs[k]||{};$('#logDate').value=k;$('#logTitle').textContent=`Log ${fmt(k,{weekday:'short',day:'numeric',month:'short'})}`;$('#flow').value=l.flow||'';$('#pain').value=l.pain||'';$('#symptoms').value=(l.symptoms||[]).join(', ');$('#notes').value=l.notes||'';$('#periodDay').checked=!!l.period;openDialog('#logDialog')}
-function profileDialog(){const p=state.profile||{};$('#profileModeEdit').value=p.mode||'self';$('#profileNameEdit').value=p.name||'';$('#onboardStartEdit').value=p.lastStart||metrics().last||'';$('#cycleLengthEdit').value=p.cycleLength||28;$('#periodLengthEdit').value=p.periodLength||5;openDialog('#profileDialog')}
-function openDialog(id){const d=$(id);if(d?.showModal&&!d.open)d.showModal()}
-function download(name,text,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function backup(){return JSON.stringify({app:'NijRitu',format:'plain',version:APP_VERSION,exportedAt:new Date().toISOString(),data:state},null,2)}
-function passphrase(label){const p=prompt(`${label}\n\nUse a strong passphrase. NijRitu cannot recover it.`);return p||null}
-async function derive(pass,salt){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-function b64(u){const a=new Uint8Array(u);let s='';for(let i=0;i<a.length;i+=32768)s+=String.fromCharCode(...a.subarray(i,i+32768));return btoa(s)}
-function ub(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
-function cleanShare(include){return {version:APP_VERSION,profile:{mode:'partner'},logs:Object.fromEntries(Object.entries(state.logs).map(([k,v])=>[k,include?{period:!!v.period,flow:v.flow||'',pain:v.pain||'',symptoms:Array.isArray(v.symptoms)?v.symptoms:[],notes:typeof v.notes==='string'?v.notes:''}:{period:!!v.period,flow:v.flow||''}]))}}
-async function encryptedExport(kind='backup'){if(!crypto?.subtle){alert('Encrypted files are not supported by this browser.');return}const pass=passphrase(kind==='share'?'Create a passphrase for this share file. The recipient needs the same passphrase.':'Create a passphrase for your encrypted backup.');if(!pass)return;const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await derive(pass,salt),payload=kind==='share'?cleanShare(confirm('Include notes, pain and symptoms?\n\nOK = include them\nCancel = share period and flow only')):state,plain=new TextEncoder().encode(JSON.stringify(payload)),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain);download(`nijritu-${kind}-${today()}.njr`,JSON.stringify({app:'NijRitu',format:'encrypted',version:1,kdf:'PBKDF2-SHA256',iterations:250000,cipher:'AES-GCM',salt:b64(salt),iv:b64(iv),data:b64(cipher)}))}
-async function importEncrypted(o){const pass=passphrase('Enter the passphrase for this encrypted file.');if(!pass)return;try{if(o.kdf!=='PBKDF2-SHA256'||o.cipher!=='AES-GCM'||o.iterations!==250000)throw Error();const key=await derive(pass,ub(o.salt)),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub(o.iv)},key,ub(o.data)),x=JSON.parse(new TextDecoder().decode(plain));if(!x.logs||typeof x.logs!=='object')throw Error();state=normalize(x);await save();render();alert('Imported locally.')}catch{alert('Could not decrypt this file. Check the passphrase and file format.')}}
-function validState(x){return !!x&&typeof x==='object'&&x.logs&&typeof x.logs==='object'}
-function bind(){
-$$('.nav-item').forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});$$('[data-view-target]').forEach(b=>b.onclick=()=>{view=b.dataset.viewTarget;render()});$$('[data-action]').forEach(b=>b.onclick=()=>actions(b.dataset.action,b.dataset.date,b.dataset.symptom));const f=$('#importFile');if(f)f.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const o=JSON.parse(await file.text());if(o.format==='encrypted')await importEncrypted(o);else{const x=o.data||o;if(!validState(x))throw Error();state=normalize(x);await save();render();alert('Backup restored locally.')}}catch{alert('This file is not a valid NijRitu backup.')}f.value=''}
-}
-async function actions(a,k,s){if(a==='log')openLog(k||today());if(a==='prev'){month=new Date(month.getFullYear(),month.getMonth()-1,1);render()}if(a==='next'){month=new Date(month.getFullYear(),month.getMonth()+1,1);render()}if(a==='profile')profileDialog();if(a==='export')download(`nijritu-backup-${today()}.json`,backup());if(a==='encrypt')encryptedExport();if(a==='share')encryptedExport('share');if(a==='addSymptom'){const input=$('#customSymptom'),v=input?.value.trim();if(v&&!state.customSymptoms.some(x=>x.toLowerCase()===v.toLowerCase())){state.customSymptoms.push(v);await save();render()}}if(a==='removeSymptom'){const v=decodeURIComponent(s||'');state.customSymptoms=state.customSymptoms.filter(x=>x!==v);await save();render()}if(a==='persist'){if(navigator.storage?.persist){const ok=await navigator.storage.persist();state.settings.persistentStorageRequested=ok;await save();alert(ok?'Persistent storage granted by the browser.':'The browser did not grant persistent storage.')}else alert('This browser does not expose persistent storage controls.')}if(a==='privacy'){state.settings.privacyMode=!state.settings.privacyMode;await save();document.body.classList.toggle('private-display',state.settings.privacyMode);render()}if(a==='reset'&&confirm('Delete all NijRitu data from this browser? This cannot be undone unless you have a backup.')){const d=await openDB();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).clear();t.oncomplete=res;t.onerror=()=>rej(t.error)});state=clone(DEFAULT);render();openDialog('#onboarding')}}
-$('#logForm').addEventListener('submit',async e=>{e.preventDefault();const k=$('#logDate').value,symptoms=$('#symptoms').value.split(',').map(x=>x.trim()).filter(Boolean),l={period:$('#periodDay').checked,flow:$('#flow').value,pain:$('#pain').value,symptoms,notes:$('#notes').value.trim(),updatedAt:new Date().toISOString()};if(!l.period&&!l.flow&&!l.pain&&!symptoms.length&&!l.notes)delete state.logs[k];else state.logs[k]=l;await save();$('#logDialog').close();render()});
-$('#profileForm').addEventListener('submit',async e=>{e.preventDefault();const start=$('#onboardStart').value;state.profile={mode:$('#profileMode').value,name:$('#profileName').value.trim(),cycleLength:Number($('#cycleLength').value)||28,periodLength:Number($('#periodLength').value)||5,lastStart:start||null};if(start)state.logs[start]={...(state.logs[start]||{}),period:true,updatedAt:new Date().toISOString()};await save();$('#onboarding').close();render()});
-$('#profileFormEdit').addEventListener('submit',async e=>{e.preventDefault();const start=$('#onboardStartEdit').value;state.profile={mode:$('#profileModeEdit').value,name:$('#profileNameEdit').value.trim(),cycleLength:Number($('#cycleLengthEdit').value)||28,periodLength:Number($('#periodLengthEdit').value)||5,lastStart:start||null};if(start)state.logs[start]={...(state.logs[start]||{}),period:true,updatedAt:new Date().toISOString()};await save();$('#profileDialog').close();render()});
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('#installBtn').hidden=false});$('#installBtn').onclick=async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('#installBtn').hidden=true};
-async function boot(){try{await load();document.body.classList.toggle('private-display',!!state.settings.privacyMode);if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});render();if(!state.profile)openDialog('#onboarding')}catch(e){console.error(e);alert('NijRitu could not open local storage in this browser.')}}boot();
+/* Ritmi 0.12: intentionally small, iPhone-first tracker. No framework, no account, no backend. */
+(function () {
+  'use strict';
+
+  var DB_NAME = 'nijritu-local';
+  var DB_VERSION = 4;
+  var STORE = 'state';
+  var KEY = 'state';
+  var today = new Date();
+  var state = {
+    version: '0.12.0',
+    profile: null,
+    logs: {},
+    settings: { persistentStorageRequested: false },
+    customSymptoms: []
+  };
+  var view = 'today';
+  var month = new Date(today.getFullYear(), today.getMonth(), 1);
+  var memoryOnly = false;
+
+  function $(id) { return document.getElementById(id); }
+  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function key(date) {
+    var d = new Date(date);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function fromKey(value) {
+    var p = value.split('-').map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  }
+  function addDays(value, amount) {
+    var d = fromKey(value);
+    d.setDate(d.getDate() + amount);
+    return key(d);
+  }
+  function diff(a, b) { return Math.round((fromKey(b) - fromKey(a)) / 86400000); }
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function clone(value) { return JSON.parse(JSON.stringify(value)); }
+  function fmtDate(value, options) {
+    return fromKey(value).toLocaleDateString(undefined, options || { month: 'short', day: 'numeric' });
+  }
+  function starts() {
+    return Object.keys(state.logs).filter(function (k) { return state.logs[k] && state.logs[k].period; }).sort();
+  }
+  function cycleLengths() {
+    var s = starts(), out = [];
+    for (var i = 1; i < s.length; i++) {
+      var n = diff(s[i - 1], s[i]);
+      if (n >= 15 && n <= 90) out.push(n);
+    }
+    return out.slice(-8);
+  }
+  function average(values, fallback) {
+    if (!values.length) return fallback;
+    return Math.round(values.reduce(function (a, b) { return a + b; }, 0) / values.length);
+  }
+  function metrics() {
+    var s = starts(), lengths = cycleLengths();
+    var cycle = Number(state.profile && state.profile.cycleLength) || average(lengths, 28);
+    var period = Number(state.profile && state.profile.periodLength) || 5;
+    var last = s.length ? s[s.length - 1] : null;
+    var next = last ? addDays(last, cycle) : null;
+    var day = last ? diff(last, key(today)) + 1 : null;
+    return { starts: s, lengths: lengths, cycle: cycle, period: period, last: last, next: next, day: day };
+  }
+  function phase(day, cycle) {
+    if (!day) return 'No period start logged';
+    if (day <= 5) return 'Menstrual phase';
+    if (day <= Math.round(cycle * 0.5)) return 'Follicular estimate';
+    if (day <= Math.round(cycle * 0.6)) return 'Ovulatory estimate';
+    return 'Luteal estimate';
+  }
+  function openDB() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) { memoryOnly = true; reject(new Error('IndexedDB unavailable')); return; }
+      var request;
+      try { request = indexedDB.open(DB_NAME, DB_VERSION); } catch (e) { memoryOnly = true; reject(e); return; }
+      request.onupgradeneeded = function () {
+        if (!request.result.objectStoreNames.contains(STORE)) request.result.createObjectStore(STORE);
+      };
+      request.onsuccess = function () { resolve(request.result); };
+      request.onerror = function () { reject(request.error || new Error('Storage unavailable')); };
+    });
+  }
+  function readState() {
+    if (memoryOnly) return Promise.resolve(null);
+    return openDB().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var request = db.transaction(STORE, 'readonly').objectStore(STORE).get(KEY);
+        request.onsuccess = function () { resolve(request.result || null); };
+        request.onerror = function () { reject(request.error); };
+      });
+    });
+  }
+  function writeState() {
+    if (memoryOnly) return Promise.resolve();
+    return openDB().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put(state, KEY);
+        tx.oncomplete = resolve;
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+  function normalize(saved) {
+    if (!saved || typeof saved !== 'object') return;
+    state = Object.assign(state, saved);
+    state.logs = saved.logs && typeof saved.logs === 'object' ? saved.logs : {};
+    state.settings = Object.assign({ persistentStorageRequested: false }, saved.settings || {});
+    state.customSymptoms = Array.isArray(saved.customSymptoms) ? saved.customSymptoms : [];
+  }
+
+  function render() {
+    var app = $('app');
+    if (!app) return;
+    if (view === 'calendar') app.innerHTML = calendarView();
+    else if (view === 'insights') app.innerHTML = insightsView();
+    else if (view === 'settings') app.innerHTML = settingsView();
+    else app.innerHTML = todayView();
+    all('.nav-item').forEach(function (button) { button.classList.toggle('active', button.getAttribute('data-view') === view); });
+    bindView();
+  }
+
+  function todayView() {
+    var m = metrics(), k = key(today), log = state.logs[k] || {};
+    var greetingDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    var nextText = m.next ? fmtDate(m.next, { weekday: 'long', month: 'long', day: 'numeric' }) : 'Add your first period start';
+    return '<section class="home-intro"><span class="kicker">' + greetingDate + '</span><h1>' + (state.profile && state.profile.name ? esc(state.profile.name) + '<br>' : '') + 'Your rhythm.</h1></section>' +
+      '<section class="cycle-hero">' +
+        '<div class="cycle-top"><span class="kicker">Current cycle</span><span class="cycle-phase">' + esc(phase(m.day, m.cycle)) + '</span></div>' +
+        '<div class="cycle-number">' + (m.day || '—') + '</div>' +
+        '<div class="cycle-label">cycle day</div>' +
+        '<div class="cycle-footer"><div><span>Next period</span><strong>' + esc(nextText) + '</strong></div><button class="primary-action" data-action="log">Log today</button></div>' +
+      '</section>' +
+      '<section class="next-strip"><div><span class="kicker">Your baseline</span><strong>' + m.cycle + ' days</strong><small>typical cycle</small></div><div><strong>' + m.period + ' days</strong><small>typical period</small></div><div><strong>' + m.starts.length + '</strong><small>starts logged</small></div></section>' +
+      '<section class="today-section"><div class="section-head"><div><span class="kicker">Today</span><h2>' + (log.period ? 'Period day' : 'Nothing logged') + '</h2></div><button class="text-button" data-action="log">' + (log.period || log.flow || log.pain || log.notes ? 'Edit' : 'Log') + '</button></div>' + todaySummary(log) + '</section>' +
+      '<section class="privacy-line"><i></i><div><strong>Private by default</strong><p>Your cycle stays on this device. No account. No health-data backend.</p></div></section>';
+  }
+
+  function todaySummary(log) {
+    if (!log.period && !log.flow && !log.pain && !log.notes) return '<p class="quiet">A small log today makes tomorrow’s view more useful.</p>';
+    var bits = [];
+    if (log.period) bits.push('Period');
+    if (log.flow) bits.push(log.flow + ' flow');
+    if (log.pain) bits.push(log.pain + ' pain');
+    if (log.notes) bits.push(log.notes);
+    return '<div class="summary-row">' + bits.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + '</div>';
+  }
+
+  function calendarView() {
+    var y = month.getFullYear(), mo = month.getMonth(), first = new Date(y, mo, 1), last = new Date(y, mo + 1, 0);
+    var offset = first.getDay(), total = Math.ceil((offset + last.getDate()) / 7) * 7;
+    var m = metrics(), predicted = {};
+    if (m.next) for (var p = 0; p < m.period; p++) predicted[addDays(m.next, p)] = true;
+    var html = '<section class="page-intro"><div><span class="kicker">History</span><h1>Calendar</h1></div><div class="month-switch"><button data-action="prev-month" aria-label="Previous month">‹</button><strong>' + month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) + '</strong><button data-action="next-month" aria-label="Next month">›</button></div></section>';
+    html += '<section class="calendar-wrap"><div class="weekday-row">' + ['S','M','T','W','T','F','S'].map(function (x) { return '<span>' + x + '</span>'; }).join('') + '</div><div class="calendar-grid">';
+    for (var i = 0; i < total; i++) {
+      if (i < offset || i >= offset + last.getDate()) { html += '<span class="blank"></span>'; continue; }
+      var date = new Date(y, mo, i - offset + 1), k = key(date), log = state.logs[k], cls = '';
+      if (k === key(today)) cls += ' today';
+      if (log && log.period) cls += ' period';
+      if (predicted[k] && !(log && log.period)) cls += ' predicted';
+      html += '<button class="calendar-day' + cls + '" data-action="log-date" data-date="' + k + '"><span>' + date.getDate() + '</span>' + ((log && (log.period || log.flow || log.pain)) ? '<i></i>' : '') + '</button>';
+    }
+    html += '</div></section><section class="calendar-note"><i class="period-key"></i><span>Logged</span><i class="predicted-key"></i><span>Estimated</span></section>';
+    return html;
+  }
+
+  function insightsView() {
+    var m = metrics(), lengths = m.lengths, spread = lengths.length ? Math.max.apply(null, lengths) - Math.min.apply(null, lengths) : null;
+    var count = {};
+    Object.keys(state.logs).forEach(function (k) {
+      var log = state.logs[k];
+      if (log && log.symptoms) log.symptoms.forEach(function (s) { count[s] = (count[s] || 0) + 1; });
+    });
+    var symptoms = Object.keys(count).sort(function (a, b) { return count[b] - count[a]; }).slice(0, 5);
+    return '<section class="page-intro"><span class="kicker">Your history</span><h1>Insights</h1><p>Simple patterns from what you have logged. Nothing here is a diagnosis.</p></section>' +
+      '<section class="insight-lead"><div><span class="kicker">Typical cycle</span><strong>' + m.cycle + '<small>days</small></strong></div><div><span class="kicker">Observed range</span><strong>' + (lengths.length ? Math.min.apply(null, lengths) + '–' + Math.max.apply(null, lengths) : '—') + '<small>days</small></strong></div></section>' +
+      '<section class="insight-list"><div class="section-head"><div><span class="kicker">Cycle starts</span><h2>' + m.starts.length + ' recorded</h2></div></div>' + (m.starts.length ? '<div class="history-list">' + m.starts.slice().reverse().map(function (s) { return '<div><span>' + fmtDate(s, { month: 'short', day: 'numeric', year: 'numeric' }) + '</span><strong>Day 1</strong></div>'; }).join('') + '</div>' : '<p class="quiet">Your history will appear here as you log period starts.</p>') + '</section>' +
+      '<section class="insight-list"><span class="kicker">Consistency</span><h2>' + (spread == null ? 'Not enough history' : spread + ' day range') + '</h2><p class="quiet">This is a descriptive view of your recorded cycle lengths, not a medical measure.</p></section>' +
+      '<section class="insight-list"><span class="kicker">Most logged symptoms</span>' + (symptoms.length ? '<div class="symptom-list">' + symptoms.map(function (s) { return '<div><span>' + esc(s) + '</span><strong>' + count[s] + '</strong></div>'; }).join('') + '</div>' : '<p class="quiet">Log symptoms with your daily entry to see patterns.</p>') + '</section>';
+  }
+
+  function settingsView() {
+    return '<section class="page-intro"><span class="kicker">Control</span><h1>Settings</h1><p>Ritmi is designed so the useful part works without an account.</p></section>' +
+      '<section class="settings-list">' +
+      '<button class="setting-row" data-action="profile"><span><small>Setup</small><strong>Cycle baseline</strong></span><b>›</b></button>' +
+      '<button class="setting-row" data-action="export"><span><small>Backup</small><strong>Export your data</strong></span><b>›</b></button>' +
+      '<label class="setting-row file-setting"><span><small>Restore</small><strong>Import a backup</strong></span><b>›</b><input id="import-file" type="file" accept="application/json,.json"></label>' +
+      '<button class="setting-row" data-action="persist"><span><small>Storage</small><strong>Request persistent storage</strong></span><b>›</b></button>' +
+      '<div class="setting-note"><strong>What stays here</strong><p>Cycle dates, logs and settings are kept in this browser’s local storage. Clearing browser data can remove them, so keep an export.</p></div>' +
+      '</section>';
+  }
+
+  function bindView() {
+    all('.nav-item').forEach(function (button) {
+      button.onclick = function () { view = button.getAttribute('data-view'); render(); };
+    });
+    all('[data-action="log"]').forEach(function (b) { b.onclick = function () { openLog(key(today)); }; });
+    all('[data-action="log-date"]').forEach(function (b) { b.onclick = function () { openLog(b.getAttribute('data-date')); }; });
+    all('[data-action="prev-month"]').forEach(function (b) { b.onclick = function () { month = new Date(month.getFullYear(), month.getMonth() - 1, 1); render(); }; });
+    all('[data-action="next-month"]').forEach(function (b) { b.onclick = function () { month = new Date(month.getFullYear(), month.getMonth() + 1, 1); render(); }; });
+    all('[data-action="profile"]').forEach(function (b) { b.onclick = openOnboarding; });
+    all('[data-action="export"]').forEach(function (b) { b.onclick = exportData; });
+    all('[data-action="persist"]').forEach(function (b) { b.onclick = requestPersistence; });
+    var importInput = $('import-file');
+    if (importInput) importInput.onchange = importData;
+  }
+
+  function openLog(date) {
+    var log = state.logs[date] || {}, sheet = $('sheet');
+    $('log-date').value = date;
+    $('sheet-kicker').textContent = fmtDate(date, { weekday: 'long', month: 'long', day: 'numeric' });
+    $('period-toggle').classList.toggle('selected', !!log.period);
+    $('period-toggle').querySelector('b').textContent = log.period ? '✓' : '○';
+    $('flow').value = log.flow || '';
+    $('pain').value = log.pain || '';
+    $('notes').value = log.notes || '';
+    sheet.hidden = false;
+    document.body.classList.add('sheet-open');
+  }
+  function closeLog() { $('sheet').hidden = true; document.body.classList.remove('sheet-open'); }
+  function openOnboarding() {
+    var p = state.profile || {};
+    $('onboard-start').value = p.start || metrics().last || '';
+    $('cycle-length').value = p.cycleLength || 28;
+    $('period-length').value = p.periodLength || 5;
+    $('consent').checked = false;
+    $('onboarding').hidden = false;
+    document.body.classList.add('sheet-open');
+  }
+  function closeOnboarding() { $('onboarding').hidden = true; document.body.classList.remove('sheet-open'); }
+
+  function saveLog(event) {
+    event.preventDefault();
+    var date = $('log-date').value, old = state.logs[date] || {};
+    state.logs[date] = {
+      period: $('period-toggle').classList.contains('selected'),
+      flow: $('flow').value,
+      pain: $('pain').value,
+      notes: $('notes').value.trim(),
+      symptoms: old.symptoms || []
+    };
+    if (!state.logs[date].period && !state.logs[date].flow && !state.logs[date].pain && !state.logs[date].notes && !state.logs[date].symptoms.length) delete state.logs[date];
+    writeState().catch(function () { memoryOnly = true; });
+    closeLog();
+    render();
+  }
+
+  function saveProfile(event) {
+    event.preventDefault();
+    state.profile = {
+      start: $('onboard-start').value,
+      cycleLength: Math.max(15, Math.min(90, Number($('cycle-length').value) || 28)),
+      periodLength: Math.max(1, Math.min(15, Number($('period-length').value) || 5))
+    };
+    if (state.profile.start && !state.logs[state.profile.start]) state.logs[state.profile.start] = { period: true, flow: '', pain: '', notes: '', symptoms: [] };
+    writeState().catch(function () { memoryOnly = true; });
+    closeOnboarding();
+    render();
+  }
+
+  function exportData() {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'ritmi-backup-' + key(today) + '.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function importData(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var incoming = JSON.parse(reader.result);
+        if (!incoming || typeof incoming !== 'object' || !incoming.logs) throw new Error('Invalid backup');
+        normalize(incoming); writeState().catch(function () {}); render();
+      } catch (e) { window.alert('That backup could not be imported.'); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+  function requestPersistence() {
+    if (!navigator.storage || !navigator.storage.persist) { window.alert('Persistent storage is not available in this browser.'); return; }
+    navigator.storage.persist().then(function (granted) {
+      state.settings.persistentStorageRequested = !!granted;
+      writeState().catch(function () {});
+      window.alert(granted ? 'Persistent storage enabled.' : 'The browser did not grant persistent storage.');
+    });
+  }
+
+  function wireSheets() {
+    $('period-toggle').onclick = function () {
+      this.classList.toggle('selected');
+      this.querySelector('b').textContent = this.classList.contains('selected') ? '✓' : '○';
+    };
+    $('log-form').addEventListener('submit', saveLog);
+    all('[data-close-sheet]').forEach(function (b) { b.onclick = closeLog; });
+    $('onboarding-form').addEventListener('submit', saveProfile);
+    all('[data-close-onboarding]').forEach(function (b) { b.onclick = closeOnboarding; });
+  }
+
+  /* Paint immediately. Storage hydration is deliberately secondary so Safari cannot hang on IndexedDB. */
+  wireSheets();
+  render();
+  readState().then(function (saved) {
+    normalize(saved);
+    render();
+    if (!state.profile) openOnboarding();
+  }).catch(function () {
+    memoryOnly = true;
+    render();
+    if (!state.profile) openOnboarding();
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+  }
+})();
