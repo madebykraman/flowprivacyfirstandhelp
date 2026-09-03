@@ -26,8 +26,10 @@ jobs:
           node --check core.js
           node --check v03.js
           node --check v03-reminders.js
+          node --check v04.js
           node --check sw.js
           node --check tests/core.test.js
+          node --check backend/storage.js
           node --check backend/server.js
           node --check backend/server.test.js
       - name: Run test suite
@@ -40,7 +42,9 @@ jobs:
           test -f core.js
           test -f v03.js
           test -f v03-reminders.js
+          test -f v04.js
           test -f tests/core.test.js
+          test -f backend/storage.js
           test -f backend/server.js
           test -f backend/server.test.js
           test -f manifest.json
