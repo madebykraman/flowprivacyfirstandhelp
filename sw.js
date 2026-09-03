@@ -1,5 +1,5 @@
-const CACHE='nijritu-static-v0.7';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./core.js','./v03.js','./v03-reminders.js','./v04.js','./v05.js','./v06-data.js','./v07-experience.js','./manifest.json','./icon.svg'];
+const CACHE='nijritu-static-v0.8';
+const ASSETS=['./','./index.html','./styles.css','./v08-trust.css','./app.js','./core.js','./v03.js','./v03-reminders.js','./v04.js','./v05.js','./v06-data.js','./v07-experience.js','./v08-trust.js','./manifest.json','./icon.svg'];
 const DB_NAME='nijritu-local';
 const STORE='state';
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
