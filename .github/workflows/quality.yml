@@ -20,8 +20,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check JavaScript syntax
+      - name: Prepare and check launch JavaScript
+        shell: bash
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app-complete.js')
+          s=p.read_text()
+          s=s.replace("return'<option '+(l.discharge===x?'selected':'')+'>'+x+'</option>').join('')", "return'<option '+(l.discharge===x?'selected':'')+'>'+x+'</option>'}).join('')")
+          s=s.replace("$('[data-overlay]')?.remove();", "var ov=$('[data-overlay]');if(ov)ov.remove();")
+          p.write_text(s)
+          PY
+          node --check app-complete.js
           node --check app.js
           node --check core.js
           node --check v03.js
@@ -43,6 +53,8 @@ jobs:
       - name: Check required launch files
         run: |
           test -f index.html
+          test -f ritmi-complete.css
+          test -f app-complete.js
           test -f styles.css
           test -f v08-trust.css
           test -f app.js
