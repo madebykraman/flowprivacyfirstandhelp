@@ -1,0 +1,26 @@
+/* Ritmi 3.4 · journal-first interaction layer · iPhone */
+:root{--r-paper:#f6f1eb;--r-night:#101014;--r-ink:#17151a;--r-muted:#77717a;--r-line:rgba(23,21,26,.12);--r-accent:#d95767;--r-violet:#8174d8;--r-peach:#f2b79d;--r-mint:#79b9aa}
+@media(min-width:431px){body{background:#e9e5e0}.screen{box-shadow:0 0 0 1px rgba(0,0,0,.06)}}
+/* Reduce dashboard chrome: content is the interface. */
+.screen{background:transparent!important}
+.hero-space{min-height:390px!important;padding-bottom:25px!important}.hero-space:before{width:430px!important;height:430px!important;right:-190px!important;top:0!important;background:radial-gradient(circle at 48% 42%,rgba(217,87,103,.19),rgba(129,116,216,.09) 40%,transparent 70%)!important;filter:blur(12px)!important}
+.hero-number,.bigstat{font-size:clamp(126px,37vw,164px)!important;background:linear-gradient(145deg,#fff 12%,#ffadb3 52%,#9d92ef 92%)!important}
+.hero-copy{margin-top:31px!important;gap:8px!important}.hero-copy strong{font-size:24px!important;font-weight:650!important}.hero-copy span{max-width:300px!important}
+/* Make the log action feel like the app's central gesture, not a CTA card. */
+.primary{min-height:76px!important;border-radius:24px!important;grid-template-columns:42px 1fr 20px!important;background:linear-gradient(110deg,#db5c6b,#8b7be0)!important;box-shadow:0 20px 50px rgba(111,77,120,.19)!important}.primary .plus{font-size:30px!important}.primary b{font-size:16px!important}.primary small{font-size:10px!important}
+/* Flat, tactile quick journal. */
+.quick{margin-top:12px!important;margin-bottom:34px!important}.quick button{min-height:78px!important}.quick button b{font-size:16px!important}.quick button small{max-width:105px!important}
+/* Calendar becomes a quiet instrument rather than a coloured grid. */
+.calendar-title{padding-top:3px!important}.day,.blank{height:50px!important;border-radius:17px!important}.day.period,.day.start{background:linear-gradient(135deg,#d95767,#9a83df)!important}.day.predicted{border:1px dashed rgba(217,87,103,.46)!important;background:rgba(217,87,103,.035)!important}.day.today{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.72)!important}
+/* Insights read like observations, not KPI cards. */
+.insight-hero{padding-top:21px!important}.insight-hero .bigstat{font-size:112px!important}.insight-hero p{font-size:14px!important;max-width:320px!important}.metric-grid{margin-top:4px!important}.metric b{font-size:29px!important}
+/* Form controls: segmented, large, one decision at a time. */
+.check{min-height:54px!important}.check label{font-size:14px!important}.sheet{padding-bottom:max(20px,env(safe-area-inset-bottom))!important}.sheet h2{font-size:29px!important;letter-spacing:-.05em!important}.sheet .primary{margin-top:15px!important}
+input,select,textarea{font-size:16px!important}
+/* Editorial typography for knowledge and long reads. */
+.article,.knowledge,.learn{max-width:370px}.article h1,.knowledge h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:500!important;letter-spacing:-.045em!important;font-size:42px!important;line-height:.96!important}.article p,.knowledge p{font-size:16px!important;line-height:1.68!important;color:var(--r-soft)!important}.article h2,.knowledge h2{font-size:20px!important;letter-spacing:-.03em!important;margin-top:34px!important}
+/* Motion is stateful, not decorative. */
+@keyframes ritmi-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.screen>*{animation:ritmi-rise .42s var(--r-ease) both}.screen>*:nth-child(2){animation-delay:.025s}.screen>*:nth-child(3){animation-delay:.05s}.screen>*:nth-child(4){animation-delay:.075s}
+@media(prefers-reduced-motion:reduce){.screen>*{animation:none!important}}
+/* Avoid accidental text selection on utility controls. */
+button,.day,.check{user-select:none;-webkit-user-select:none}
