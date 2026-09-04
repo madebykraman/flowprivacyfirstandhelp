@@ -39,11 +39,13 @@ jobs:
         run: |
           test -s index.html
           test -s ritmi-v3.css
+          test -s ritmi-3-3.css
           test -s app-complete.js
-          grep -q 'ritmi-v3.css?v=62' index.html
-          grep -q 'ritmi-enhancements.js?v=62' index.html
-          grep -q "const CACHE='ritmi-static-v3.2.0'" sw.js
+          grep -q 'ritmi-3-3.css?v=63' index.html
+          grep -q 'ritmi-enhancements.js?v=63' index.html
+          grep -q "const CACHE='ritmi-static-v3.3.0'" sw.js
           grep -q 'quiet-nav' ritmi-enhancements.js
+          grep -q 'display:none!important' ritmi-3-3.css
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
