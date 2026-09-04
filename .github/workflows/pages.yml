@@ -41,12 +41,17 @@ jobs:
           test -s ritmi-v3.css
           test -s ritmi-3-3.css
           test -s ritmi-next.css
+          test -s ritmi-3-5.css
           test -s app-complete.js
-          grep -q 'ritmi-next.css?v=64' index.html
-          grep -q 'ritmi-enhancements.js?v=64' index.html
-          grep -q "const CACHE='ritmi-static-v3.4.0'" sw.js
+          grep -q 'ritmi-3-5.css?v=65' index.html
+          grep -q 'ritmi-enhancements.js?v=65' index.html
+          grep -q "const CACHE='ritmi-static-v3.5.0'" sw.js
           grep -q 'quiet-nav' ritmi-enhancements.js
-          grep -q 'display:none!important' ritmi-3-3.css
+          grep -q 'Primary navigation' ritmi-enhancements.js
+          grep -q 'grid-template-columns:repeat(4,1fr)' ritmi-3-5.css
+      - name: Run launch checks
+        shell: bash
+        run: node tests/launch-hardening.test.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
