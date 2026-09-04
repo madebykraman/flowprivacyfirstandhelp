@@ -51,7 +51,4 @@ jobs:
           path: .
       - name: Deploy to GitHub Pages
         id: deployment
-        run: echo 'deploy-pages step intentionally replaced by standard action below'
-        shell: bash
-      - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
