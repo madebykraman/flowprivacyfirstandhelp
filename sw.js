@@ -1,5 +1,5 @@
-const CACHE='ritmi-static-v2.0.0';
-const ASSETS=['./','./index.html','./ritmi-complete.css?v=31','./app-complete.js?v=31','./manifest.json','./icon.svg','./404.html'];
-self.addEventListener('install',function(event){event.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ASSETS)}).then(function(){return self.skipWaiting()}))});
-self.addEventListener('activate',function(event){event.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.filter(function(k){return k!==CACHE}).map(function(k){return caches.delete(k)}))}).then(function(){return self.clients.claim()}))});
-self.addEventListener('fetch',function(event){if(event.request.method!=='GET')return;var u=new URL(event.request.url);if(u.origin!==location.origin)return;event.respondWith(fetch(event.request).then(function(r){if(r&&r.ok){var c=r.clone();caches.open(CACHE).then(function(x){x.put(event.request,c)})}return r}).catch(function(){return caches.match(event.request).then(function(r){return r||caches.match('./index.html')})}))});
+const CACHE='ritmi-static-v2.1.0';
+const ASSETS=['./','./index.html','./ritmi-complete.css?v=31','./app-complete.js?v=31','./ritmi-enhancements.js?v=31','./manifest.json','./icon.svg','./404.html'];
+self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ASSETS)}).then(function(){return self.skipWaiting()}))});
+self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.filter(function(k){return k!==CACHE}).map(function(k){return caches.delete(k)}))}).then(function(){return self.clients.claim()}))});
+self.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;var u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith(fetch(e.request).then(function(r){if(r&&r.ok){var c=r.clone();caches.open(CACHE).then(function(x){x.put(e.request,c)})}return r}).catch(function(){return caches.match(e.request).then(function(r){return r||caches.match('./index.html')})}))});
