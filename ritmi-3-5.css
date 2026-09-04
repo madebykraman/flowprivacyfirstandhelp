@@ -1,24 +1,15 @@
-/* Ritmi 3.5 · visible navigation + tactile mobile system · iPhone first */
+/* Ritmi 3.6 · visible navigation + tactile mobile system · iPhone first */
 :root{--r35-bg:#f6f1eb;--r35-ink:#17151a;--r35-muted:#77717a;--r35-line:rgba(23,21,26,.1);--r35-accent:#d95767;--r35-violet:#8174d8}
-/* Make primary destinations discoverable without restoring the old dashboard/dock. */
 .quiet-nav{position:sticky!important;top:max(8px,env(safe-area-inset-top))!important;z-index:40!important;width:calc(100% - 24px)!important;max-width:406px!important;margin:8px auto 0!important;display:flex!important;align-items:center!important;gap:7px!important;padding:7px!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:22px!important;background:rgba(246,241,235,.76)!important;box-shadow:0 10px 34px rgba(35,27,31,.08),inset 0 1px rgba(255,255,255,.9)!important;backdrop-filter:blur(22px) saturate(1.15)!important;-webkit-backdrop-filter:blur(22px) saturate(1.15)!important}
 .quiet-nav-trigger,.quiet-menu,.quiet-popover-head{display:none!important}
 .quiet-popover{display:block!important;position:static!important;inset:auto!important;width:100%!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;transform:none!important}
-.quiet-links{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:3px!important}
-.quiet-link{min-width:0!important;height:39px!important;border:0!important;border-radius:16px!important;background:transparent!important;color:var(--r35-muted)!important;font:600 12px/1 -apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif!important;letter-spacing:-.01em!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;transition:transform .18s ease,background .18s ease,color .18s ease!important}
-.quiet-link small{display:none!important}.quiet-link:active{transform:scale(.96)!important}.quiet-link:nth-child(1):after,.quiet-link:nth-child(2):after,.quiet-link:nth-child(3):after,.quiet-link:nth-child(4):after{content:'';position:absolute;bottom:5px;width:3px;height:3px;border-radius:50%;background:transparent;transition:background .18s ease}
-body:has(.quiet-link:nth-child(1)[aria-current='page']) .quiet-link:nth-child(1),body:has(.quiet-link:nth-child(2)[aria-current='page']) .quiet-link:nth-child(2),body:has(.quiet-link:nth-child(3)[aria-current='page']) .quiet-link:nth-child(3),body:has(.quiet-link:nth-child(4)[aria-current='page']) .quiet-link:nth-child(4){color:var(--r35-ink)!important;background:rgba(255,255,255,.72)!important;box-shadow:0 3px 10px rgba(35,27,31,.06)!important}
+.quiet-links{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:3px!important}
+.quiet-link{min-width:0!important;height:39px!important;border:0!important;border-radius:16px!important;background:transparent!important;color:var(--r35-muted)!important;font:600 11.5px/1 -apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif!important;letter-spacing:-.015em!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;transition:transform .18s ease,background .18s ease,color .18s ease!important}
+.quiet-link:active{transform:scale(.96)!important}.quiet-link:after{content:'';position:absolute;bottom:5px;width:3px;height:3px;border-radius:50%;background:transparent;transition:background .18s ease}
+.quiet-link[aria-current='page']{color:var(--r35-ink)!important;background:rgba(255,255,255,.72)!important;box-shadow:0 3px 10px rgba(35,27,31,.06)!important}
 .quiet-link[aria-current='page']:after{background:var(--r35-accent)!important}
-.screen{padding-top:6px!important}
-/* Give the page a little more breathing room while keeping the first action above the fold. */
-.hero{padding-top:22px!important}.head{padding-top:24px!important}
-/* Touch targets and focus states. */
-button{ -webkit-tap-highlight-color:transparent }
-button:focus-visible{outline:2px solid rgba(129,116,216,.55)!important;outline-offset:3px!important}
-/* Let long screens feel editorial rather than boxed. */
-.list,.metric-grid,.timeline,.notice,.privacy,.bars,.legend{border-radius:0!important}
-/* Softer section rhythm. */
-.section-title{margin-top:30px!important;letter-spacing:.13em!important}
-/* Avoid the nav feeling like a second header on very small phones. */
-@media(max-width:360px){.quiet-link{font-size:11px!important}.quiet-nav{width:calc(100% - 16px)!important}.screen{padding-left:16px!important;padding-right:16px!important}}
+.screen{padding-top:6px!important}.hero{padding-top:22px!important}.head{padding-top:24px!important}
+button{-webkit-tap-highlight-color:transparent}button:focus-visible{outline:2px solid rgba(129,116,216,.55)!important;outline-offset:3px!important}
+.list,.metric-grid,.timeline,.notice,.privacy,.bars,.legend{border-radius:0!important}.section-title{margin-top:30px!important;letter-spacing:.13em!important}
+@media(max-width:360px){.quiet-link{font-size:10.5px!important}.quiet-nav{width:calc(100% - 16px)!important}.screen{padding-left:16px!important;padding-right:16px!important}}
 @media(prefers-reduced-motion:reduce){.quiet-link{transition:none!important}}
