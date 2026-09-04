@@ -1,0 +1,29 @@
+{
+  "backups": {},
+  "community": [
+    {
+      "id": "demo-post-001",
+      "body": "Demo community post. This record is fictional staging content and contains no personal health data.",
+      "createdAt": "2026-09-01T00:00:00.000Z",
+      "status": "approved",
+      "replyCount": 0,
+      "reports": 0
+    }
+  ],
+  "professionals": [
+    {
+      "id": "demo-pro-001",
+      "name": "Demo Women's Health Clinic",
+      "role": "Demo listing",
+      "specialties": "Cycle health, general education",
+      "location": "Demo City",
+      "credentials": "Fictional staging credential",
+      "url": "https://example.com/ritmi-demo",
+      "email": "demo@example.com",
+      "createdAt": "2026-09-01T00:00:00.000Z",
+      "status": "approved",
+      "verified": true,
+      "reports": 0
+    }
+  ]
+}
