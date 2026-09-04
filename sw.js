@@ -1,5 +1,5 @@
-const CACHE='ritmi-static-v0.12.1';
-const ASSETS=['./','./index.html','./styles.css?v=12','./app.js?v=12','./manifest.json','./icon.svg','./404.html'];
+const CACHE='ritmi-static-v0.13.0';
+const ASSETS=['./','./index.html','./styles.css?v=13','./app.js?v=13','./manifest.json','./icon.svg','./404.html'];
 const DB_NAME='nijritu-local';
 const STORE='state';
 self.addEventListener('install',function(event){event.waitUntil(caches.open(CACHE).then(function(cache){return cache.addAll(ASSETS);}).then(function(){return self.skipWaiting();}));});
