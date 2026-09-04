@@ -58,6 +58,7 @@ jobs:
           test -f ritmi-complete.css
           test -f ritmi-overhaul.css
           test -f ritmi-v3.css
+          test -f ritmi-3-3.css
           test -f app-complete.js
           test -f ritmi-enhancements.js
           test -f styles.css
