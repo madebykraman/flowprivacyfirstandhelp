@@ -1,0 +1,18 @@
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const index=fs.readFileSync('index.html','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
+const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+const demo=JSON.parse(fs.readFileSync('backend/demo-store.json','utf8'));
+assert.match(index,/viewport-fit=cover/);
+assert.match(index,/no-referrer/);
+assert.match(index,/ritmi-enhancements\.js\?v=31/);
+assert.match(sw,/ritmi-enhancements\.js\?v=31/);
+assert.equal(manifest.name,'Ritmi');
+assert.equal(manifest.display,'standalone');
+assert.equal(manifest.orientation,'portrait-primary');
+assert.equal(Array.isArray(demo.community),true);
+assert.equal(Array.isArray(demo.professionals),true);
+assert.equal(demo.professionals.every(x=>x.verified===true),true);
+assert.equal(demo.professionals.some(x=>x.email==='demo@example.com'),true);
+console.log('launch hardening checks passed');
