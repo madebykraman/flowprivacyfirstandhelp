@@ -23,6 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Prepare launch bundle
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app-complete.js')
+          s=p.read_text()
+          s=s.replace("return'<option '+(l.discharge===x?'selected':'')+'>'+x+'</option>').join('')", "return'<option '+(l.discharge===x?'selected':'')+'>'+x+'</option>'}).join('')")
+          s=s.replace("$('[data-overlay]')?.remove();", "var ov=$('[data-overlay]');if(ov)ov.remove();")
+          p.write_text(s)
+          i=Path('index.html')
+          x=i.read_text().replace('app-complete.js?v=30','app-complete.js?v=31').replace('ritmi-complete.css?v=30','ritmi-complete.css?v=31')
+          i.write_text(x)
+          PY
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
