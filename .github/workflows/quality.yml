@@ -46,11 +46,12 @@ jobs:
           node --check sw.js
           node --check tests/core.test.js
           node --check tests/privacy-boundary.test.js
+          node --check tests/launch-hardening.test.js
           node --check backend/storage.js
           node --check backend/server.js
           node --check backend/server.test.js
       - name: Run test suite
-        run: node tests/core.test.js && node tests/privacy-boundary.test.js && node backend/server.test.js
+        run: node tests/core.test.js && node tests/privacy-boundary.test.js && node tests/launch-hardening.test.js && node backend/server.test.js
       - name: Check required launch files
         run: |
           test -f index.html
@@ -71,11 +72,18 @@ jobs:
           test -f v10-brand-ritmi.js
           test -f tests/core.test.js
           test -f tests/privacy-boundary.test.js
+          test -f tests/launch-hardening.test.js
           test -f backend/storage.js
           test -f backend/server.js
           test -f backend/server.test.js
+          test -f backend/demo-store.json
+          test -f backend/.env.example
           test -f manifest.json
           test -f sw.js
           test -f privacy.html
+          test -f LAUNCH_HARDENING.md
+          test -f docs/REAL_DEVICE_IPHONE_ACCEPTANCE.md
+          test -f docs/LEGAL_CLEARANCE.md
+          test -f docs/PRIVACY_SUPPORT.md
       - name: Check manifest JSON
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('manifest.json valid')"
